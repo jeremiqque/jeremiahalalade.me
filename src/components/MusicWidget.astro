@@ -1,10 +1,16 @@
 ---
-// Live "last listened / now playing" music card.
+// Live "now playing / last listened" music card.
 // Matches Figma node 290-124: lighter #2E2E2E shell, inner #202020 panel,
-// square album art, and a vinyl icon in the footer.
-// Pulls real data from /api/spotify on the client. album.svg is the
-// placeholder shown before load and on error.
+// square album art, vinyl icon footer. When a track is actively playing it
+// switches to the "Listening now" state: animated equalizer bars + red dot.
+// Pulls real data from /api/spotify on the client.
 const PLACEHOLDER_ART = "/assets/album.svg";
+
+// Deterministic per-bar timing so the equalizer looks lively but stable.
+const BARS = Array.from({ length: 22 }, (_, i) => ({
+  delay: ((i * 0.13) % 0.9).toFixed(2),
+  dur: (0.6 + ((i * 7) % 6) * 0.09).toFixed(2),
+}));
 ---
 
 <div class="music" data-music>
@@ -23,10 +29,15 @@ const PLACEHOLDER_ART = "/assets/album.svg";
         <a class="mw-title" data-title href="#">Loading…</a>
         <p class="mw-artist" data-artist>&nbsp;</p>
       </div>
+
+      <div class="mw-viz" data-viz aria-hidden="true">
+        {BARS.map((b) => <i style={`animation-delay:${b.delay}s;animation-duration:${b.dur}s`}></i>)}
+      </div>
     </div>
+
     <div class="mw-footer">
-      <span class="mw-vinyl" data-dot aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+      <span class="mw-status" aria-hidden="true">
+        <svg class="mw-vinyl" viewBox="0 0 24 24" width="22" height="22" fill="none">
           <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="1.5"/>
           <path d="M9 6C7.62837 6.53566 6.53566 7.62837 6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <path d="M14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14C13.1046 14 14 13.1046 14 12Z" stroke="currentColor" stroke-width="1.5"/>
@@ -44,7 +55,6 @@ const PLACEHOLDER_ART = "/assets/album.svg";
       art: root.querySelector("[data-art]"),
       title: root.querySelector("[data-title]"),
       artist: root.querySelector("[data-artist]"),
-      dot: root.querySelector("[data-dot]"),
       last: root.querySelector("[data-last]"),
     };
 
@@ -62,22 +72,22 @@ const PLACEHOLDER_ART = "/assets/album.svg";
         els.title.textContent = song.title;
         els.title.href = song.songUrl || "#";
         els.artist.textContent = song.artists;
-        els.last.textContent = song.lastPlayed;
-        els.dot.classList.toggle("is-playing", !!song.isPlaying);
+        els.last.textContent = song.isPlaying ? "Listening now" : song.lastPlayed;
+        root.classList.toggle("is-playing", !!song.isPlaying);
       } catch (e) {
         els.title.textContent = "Unable to load music";
         els.title.removeAttribute("href");
         els.artist.textContent = "";
         els.last.textContent = e instanceof Error ? e.message : "Try again later.";
-        els.dot.classList.remove("is-playing");
+        root.classList.remove("is-playing");
       }
     }
 
     fetchSpotify();
-    // Refresh every 45s, only while the tab is visible.
+    // Refresh every 20s, only while the tab is visible (snappier "now playing").
     setInterval(() => {
       if (!document.hidden) fetchSpotify();
-    }, 45000);
+    }, 20000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) fetchSpotify();
     });
@@ -121,6 +131,7 @@ const PLACEHOLDER_ART = "/assets/album.svg";
   }
 
   .mw-meta {
+    flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -148,7 +159,33 @@ const PLACEHOLDER_ART = "/assets/album.svg";
     text-overflow: ellipsis;
   }
 
-  /* Footer (vinyl icon + last listened) on the #2E2E2E shell */
+  /* ----- Equalizer (only while playing) ----- */
+  .mw-viz {
+    flex: none;
+    display: none;          /* shown via .is-playing */
+    align-items: center;
+    gap: 3px;
+    height: 36px;
+    padding-right: clamp(6px, 1vw, 16px);
+  }
+  .mw-viz i {
+    display: block;
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    background: #f0500c;
+    transform: scaleY(0.28);
+    transform-origin: center;
+    animation-name: mw-eq;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  @keyframes mw-eq {
+    0%, 100% { transform: scaleY(0.28); }
+    50%      { transform: scaleY(1); }
+  }
+
+  /* ----- Footer (vinyl/dot + status text) ----- */
   .mw-footer {
     display: flex;
     align-items: center;
@@ -158,10 +195,15 @@ const PLACEHOLDER_ART = "/assets/album.svg";
     font-size: clamp(0.9rem, 1vw, 1rem);
   }
 
-  .mw-vinyl {
+  .mw-status {
     flex: none;
     display: inline-flex;
+    align-items: center;
     color: #f2f2f2;
+  }
+  .mw-vinyl {
+    display: inline-block;
+    transition: color 0.25s ease;
   }
 
   .mw-last {
@@ -169,5 +211,20 @@ const PLACEHOLDER_ART = "/assets/album.svg";
     text-overflow: ellipsis;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* ----- Playing state ----- */
+  .music.is-playing .mw-viz { display: flex; }
+  .music.is-playing .mw-vinyl {
+    color: #f0500c;
+    animation: mw-spin 3.2s linear infinite;
+  }
+  @keyframes mw-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mw-viz i { animation: none; transform: scaleY(0.6); }
+    .music.is-playing .mw-vinyl { animation: none; }
   }
 </style>
