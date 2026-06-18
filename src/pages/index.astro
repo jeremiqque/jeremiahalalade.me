@@ -1,0 +1,218 @@
+---
+// Jeremiah Alalade — personal landing page
+// Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
+import MusicWidget from '../components/MusicWidget.astro';
+const bio = [
+  'I design and engineer at Axiom Black',
+  'I consider Nigeria as current home',
+  'I highlight curiosity as a personal quality',
+];
+const email = 'hey@jeremiahalalade.me';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Jeremiah Alalade — designer and engineer at Axiom Black." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23181818'/><rect x='3' y='3' width='26' height='26' rx='3' fill='%23202020'/></svg>" />
+    <title>Jeremiah Alalade</title>
+  </head>
+  <body>
+    <main class="card">
+      <header class="top">
+        <div class="intro">
+          <div class="name-row">
+            <h1 class="name">Jeremiah Alalade</h1>
+            <img class="hand" src="assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
+          </div>
+          <div class="bio">
+            {bio.map((line) => <p>{line}</p>)}
+          </div>
+        </div>
+
+        <a class="email" href={`mailto:${email}`}>
+          <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+          <span>{email}</span>
+        </a>
+      </header>
+
+      <hr class="divider" />
+
+      <div class="pill">More about me to come</div>
+
+      <div class="music-slot">
+        <MusicWidget />
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  /* ----- Fonts (local OTF, exposed as CSS variables) ----- */
+  @font-face {
+    font-family: 'Nimbu Demo';
+    src: url('fonts/NimbuDemo-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Neue Corp Compact';
+    src: url('fonts/PPNeueCorp-CompactMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    --font-heading: 'Nimbu Demo', sans-serif;
+    --font-body: 'PP Neue Corp Compact', sans-serif;
+
+    --bg-frame: #181818;
+    --bg-card: #202020;
+    --text: #f2f2f2;
+
+    --frame: 12px;
+  }
+
+  /* ----- Reset ----- */
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    padding: var(--frame);
+    background: var(--bg-frame);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ----- Card (the #202020 panel inside the 12px frame) ----- */
+  .card {
+    min-height: calc(100vh - (var(--frame) * 2));
+    min-height: calc(100dvh - (var(--frame) * 2));
+    background: var(--bg-card);
+    display: flex;
+    flex-direction: column;
+    padding: clamp(32px, 3.4vw, 52px) clamp(28px, 2.6vw, 40px);
+  }
+
+  /* ----- Top region: intro + email ----- */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .intro { min-width: 0; }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .name {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(2rem, 3.2vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: #fefefe;
+  }
+
+  .hand {
+    flex: none;
+    height: clamp(54px, 5vw, 74px);
+    width: auto;
+  }
+
+  .bio {
+    margin: 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bio p {
+    margin: 0;
+    font-size: clamp(0.95rem, 1.15vw, 1.0625rem);
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  /* ----- Email (top-right) ----- */
+  .email {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: clamp(0.95rem, 1.1vw, 1.0625rem);
+    white-space: nowrap;
+  }
+
+  .email-icon { flex: none; }
+
+  /* ----- Dashed divider (from the Figma frame) ----- */
+  .divider {
+    width: 100%;
+    height: 0;
+    border: none;
+    border-top: 1px dashed #3d3d3d;
+    margin: clamp(22px, 2.6vw, 34px) 0 0;
+  }
+
+  /* ----- "More about me to come" pill ----- */
+  .pill {
+    align-self: flex-start;
+    margin: 32px 0 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: clamp(64px, 6.4vw, 84px);
+    padding: 0 clamp(32px, 3vw, 44px);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+    color: #ffffff;
+    background: linear-gradient(90deg, #1a1a1a 0%, #7e7e7e 100%);
+    box-shadow:
+      0 0 0 4px rgba(82, 82, 82, 0.6),
+      inset 0 1px 1px rgba(255, 255, 255, 0.6),
+      inset 0 -2px 1px rgba(0, 0, 0, 0.1);
+    user-select: none;
+  }
+
+  /* ----- Music widget slot ----- */
+  .music-slot {
+    align-self: stretch;
+    width: 100%;
+    max-width: none;
+    margin-top: clamp(28px, 4vw, 48px);
+  }
+
+  /* ----- Responsive: tablet / mobile ----- */
+  @media (max-width: 720px) {
+    .top {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: clamp(28px, 8vw, 48px);
+    }
+    .name-row { gap: 30px; }
+    .pill { margin: 28px 0 0; }
+  }
+</style>

@@ -1,0 +1,142 @@
+<!doctype html>
+<!--
+  STANDALONE VISUAL PREVIEW of the Figma "My iste" frame.
+  Mirrors src/pages/index.astro markup + CSS (asset paths prefixed with public/).
+  The Spotify MusicWidget is intentionally omitted here — this file exists only to
+  verify the Figma layout without running the Astro toolchain.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jeremiah Alalade — preview</title>
+    <style>
+      @font-face {
+        font-family: 'Nimbu Demo';
+        src: url('public/fonts/NimbuDemo-Medium.otf') format('opentype');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'PP Neue Corp Compact';
+        src: url('public/fonts/PPNeueCorp-CompactMedium.otf') format('opentype');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      :root {
+        --font-heading: 'Nimbu Demo', sans-serif;
+        --font-body: 'PP Neue Corp Compact', sans-serif;
+        --bg-frame: #181818; --bg-card: #202020; --text: #f2f2f2; --frame: 12px;
+      }
+      *,*::before,*::after { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0; padding: var(--frame);
+        background: var(--bg-frame); color: var(--text);
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      }
+      .card {
+        min-height: calc(100vh - (var(--frame) * 2));
+        background: var(--bg-card);
+        display: flex; flex-direction: column;
+        padding: clamp(32px, 3.4vw, 52px) clamp(28px, 2.6vw, 40px);
+      }
+      .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; }
+      .intro { min-width: 0; }
+      .name-row { display: flex; align-items: center; gap: 30px; }
+      .name {
+        margin: 0; font-family: var(--font-heading); font-weight: 500;
+        font-size: clamp(2rem, 3.2vw, 2.6rem); line-height: 1;
+        letter-spacing: 0.01em; color: #fefefe;
+      }
+      .hand { flex: none; height: clamp(54px, 5vw, 74px); width: auto; }
+      .bio { margin: 16px 0 0; display: flex; flex-direction: column; gap: 4px; }
+      .bio p { margin: 0; font-size: clamp(0.95rem, 1.15vw, 1.0625rem); line-height: 1.4; color: var(--text); }
+      .email {
+        flex: none; display: inline-flex; align-items: center; gap: 8px;
+        color: var(--text); text-decoration: none;
+        font-size: clamp(0.95rem, 1.1vw, 1.0625rem); white-space: nowrap;
+      }
+      .email-icon { flex: none; }
+      .divider { width: 100%; height: 0; border: none; border-top: 1px dashed #3d3d3d; margin: clamp(22px, 2.6vw, 34px) 0 0; }
+      .pill {
+        align-self: flex-start; margin: 32px 0 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        min-height: clamp(64px, 6.4vw, 84px); padding: 0 clamp(32px, 3vw, 44px);
+        border-radius: 999px; font-family: var(--font-body);
+        font-size: clamp(1rem, 1.2vw, 1.125rem); color: #fff;
+        background: linear-gradient(90deg, #1a1a1a 0%, #7e7e7e 100%);
+        box-shadow: 0 0 0 4px rgba(82,82,82,0.6), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 1px rgba(0,0,0,0.1);
+        user-select: none;
+      }
+      @media (max-width: 720px) {
+        .top { flex-direction: column-reverse; align-items: flex-start; gap: clamp(28px, 8vw, 48px); }
+        .name-row { gap: 30px; }
+        .pill { margin: 28px 0 0; }
+      }
+
+      /* ----- Music card (mirrors MusicWidget.astro) ----- */
+      .music-slot { align-self: stretch; width: 100%; max-width: none; margin-top: clamp(28px, 4vw, 48px); }
+      .music { width: 100%; max-width: none; font-family: var(--font-body, sans-serif); }
+      .mw-card { background: #2e2e2e; border-radius: 0; padding: clamp(12px,1.4vw,17px) clamp(16px,2vw,27px); display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
+      .mw-panel { background: #202020; border-radius: 0; display: flex; align-items: center; gap: 14px; padding: clamp(9px,1.1vw,12px); }
+      .mw-art { flex: none; height: clamp(72px,8.5vw,93px); width: clamp(72px,8.5vw,93px); border-radius: 0; object-fit: cover; background: #d9d9d9; }
+      .mw-meta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+      .mw-title { color: #f2f2f2; font-size: clamp(1.15rem,1.5vw,1.4rem); font-weight: 600; line-height: 1.15; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .mw-artist { margin: 0; color: #c9c9c9; font-size: clamp(0.95rem,1.1vw,1.05rem); }
+      .mw-footer { display: flex; align-items: center; gap: 10px; padding: 2px 6px; color: #f2f2f2; font-size: clamp(0.9rem,1vw,1rem); }
+      .mw-vinyl { flex: none; display: inline-flex; color: #f2f2f2; }
+      .mw-last { font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <header class="top">
+        <div class="intro">
+          <div class="name-row">
+            <h1 class="name">Jeremiah Alalade</h1>
+            <img class="hand" src="public/assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
+          </div>
+          <div class="bio">
+            <p>I design and engineer at Axiom Black</p>
+            <p>I consider Nigeria as current home</p>
+            <p>I highlight curiosity as a personal quality</p>
+          </div>
+        </div>
+        <a class="email" href="mailto:hey@jeremiahalalade.me">
+          <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2 0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5 0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+          <span>hey@jeremiahalalade.me</span>
+        </a>
+      </header>
+      <hr class="divider" />
+
+      <div class="pill">More about me to come</div>
+
+      <div class="music-slot">
+        <div class="music">
+          <div class="mw-card">
+            <div class="mw-panel">
+              <img class="mw-art" src="public/assets/album.svg" alt="Album artwork for Dear God by Boy Muller" width="93" height="93" draggable="false" />
+              <div class="mw-meta">
+                <a class="mw-title" href="#">Dear God</a>
+                <p class="mw-artist">Boy Muller</p>
+              </div>
+            </div>
+            <div class="mw-footer">
+              <span class="mw-vinyl" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M9 6C7.62837 6.53566 6.53566 7.62837 6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M14 12C14 10.8954 13.1046 10 12 10C10.8954 10 10 10.8954 10 12C10 13.1046 10.8954 14 12 14C13.1046 14 14 13.1046 14 12Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+              </span>
+              <span class="mw-last">Last listened yesterday at 8:52 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
