@@ -2,11 +2,6 @@
 // Jeremiah Alalade — personal landing page
 // Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
 import MusicWidget from '../components/MusicWidget.astro';
-const bio = [
-  'I design and engineer at Axiom Black',
-  'I consider Nigeria as current home',
-  'I highlight curiosity as a personal quality',
-];
 const email = 'hey@jeremiahalalade.me';
 ---
 
@@ -28,7 +23,9 @@ const email = 'hey@jeremiahalalade.me';
             <img class="hand" src="assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
           </div>
           <div class="bio">
-            {bio.map((line) => <p>{line}</p>)}
+            <p>I design and engineer at <a class="bio-link" href="https://axiomblack.com" target="_blank" rel="noopener noreferrer">Axiom Black</a></p>
+            <p>I consider Nigeria as current home</p>
+            <p>I highlight curiosity as a personal quality</p>
           </div>
         </div>
 
@@ -152,6 +149,15 @@ const email = 'hey@jeremiahalalade.me';
     line-height: 1.4;
     color: var(--text);
   }
+
+  .bio-link {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(242, 242, 242, 0.45);
+    transition: text-decoration-color 0.2s ease;
+  }
+  .bio-link:hover { text-decoration-color: #f2f2f2; }
 
   /* ----- Email (top-right) ----- */
   .email {

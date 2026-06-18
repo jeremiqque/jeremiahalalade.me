@@ -51,6 +51,8 @@
       .hand { flex: none; height: clamp(54px, 5vw, 74px); width: auto; }
       .bio { margin: 16px 0 0; display: flex; flex-direction: column; gap: 4px; }
       .bio p { margin: 0; font-size: clamp(0.95rem, 1.15vw, 1.0625rem); line-height: 1.4; color: var(--text); }
+      .bio-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(242,242,242,0.45); transition: text-decoration-color 0.2s ease; }
+      .bio-link:hover { text-decoration-color: #f2f2f2; }
       .email {
         flex: none; display: inline-flex; align-items: center; gap: 8px;
         color: var(--text); text-decoration: none;
@@ -106,7 +108,7 @@
             <img class="hand" src="public/assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
           </div>
           <div class="bio">
-            <p>I design and engineer at Axiom Black</p>
+            <p>I design and engineer at <a class="bio-link" href="https://axiomblack.com" target="_blank" rel="noopener noreferrer">Axiom Black</a></p>
             <p>I consider Nigeria as current home</p>
             <p>I highlight curiosity as a personal quality</p>
           </div>
