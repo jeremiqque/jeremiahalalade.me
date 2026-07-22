@@ -2,6 +2,7 @@
 // Jeremiah Alalade — personal landing page
 // Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
 import MusicWidget from '../components/MusicWidget.astro';
+import Dock from '../components/Dock.astro';
 const email = 'hey@jeremiahalalade.me';
 ---
 
@@ -41,6 +42,7 @@ const email = 'hey@jeremiahalalade.me';
           </div>
         </div>
 
+        <div class="top-right-col">
         <div class="top-right">
           <a class="email" href={`mailto:${email}`}>
             <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -60,6 +62,12 @@ const email = 'hey@jeremiahalalade.me';
             </svg>
           </button>
         </div>
+
+        <p class="last-visitor" data-last-visitor hidden>
+          <span class="lv-label">Last visitor:</span>
+          <span class="lv-place" data-lv-place></span>
+        </p>
+        </div>
       </header>
 
       <hr class="divider" />
@@ -70,6 +78,8 @@ const email = 'hey@jeremiahalalade.me';
         <MusicWidget />
       </div>
     </main>
+
+    <Dock />
   </body>
 </html>
 
@@ -82,6 +92,25 @@ const email = 'hey@jeremiahalalade.me';
       document.documentElement.dataset.theme = next;
       try { localStorage.setItem('theme', next); } catch (e) {}
     });
+  })();
+</script>
+
+<script is:inline>
+  // Fetch the previous visitor's location and reveal the line.
+  (function () {
+    var el = document.querySelector('[data-last-visitor]');
+    var place = document.querySelector('[data-lv-place]');
+    if (!el || !place) return;
+    fetch('/api/visitor')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        var v = data && data.visitor;
+        if (v && v.city && v.country) {
+          place.textContent = v.city + ', ' + v.country;
+          el.hidden = false;
+        }
+      })
+      .catch(function () {});
   })();
 </script>
 
@@ -132,6 +161,26 @@ const email = 'hey@jeremiahalalade.me';
     --toggle-bg: rgba(255, 255, 255, 0.06);
     --toggle-border: rgba(255, 255, 255, 0.16);
     --toggle-bg-hover: rgba(255, 255, 255, 0.12);
+
+    --text-muted: rgba(242, 242, 242, 0.55);
+    --lv-accent: #7cb0ff;
+
+    --dock-bg: rgba(36, 36, 38, 0.97);
+    --dock-border: rgba(255, 255, 255, 0.07);
+    --dock-icon: rgba(255, 255, 255, 0.9);
+    --dock-icon-hover: #ffffff;
+    --dock-item-hover: rgba(255, 255, 255, 0.09);
+    --dock-book-border: rgba(255, 255, 255, 0.12);
+    --dock-book-text: #ffffff;
+    --dock-book-hover-bg: #ffffff;
+    --dock-book-hover-text: #000000;
+    --dock-divider: rgba(255, 255, 255, 0.1);
+    --dock-tile-fill-a: #202020;
+    --dock-tile-fill-b: #414141;
+    --dock-tile-edge-a: #373737;
+    --dock-tile-edge-b: #262626;
+    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   :root[data-theme='light'] {
@@ -155,6 +204,26 @@ const email = 'hey@jeremiahalalade.me';
     --toggle-bg: rgba(0, 0, 0, 0.05);
     --toggle-border: rgba(0, 0, 0, 0.14);
     --toggle-bg-hover: rgba(0, 0, 0, 0.1);
+
+    --text-muted: rgba(31, 31, 31, 0.55);
+    --lv-accent: #2563eb;
+
+    --dock-bg: rgba(255, 255, 255, 0.95);
+    --dock-border: rgba(0, 0, 0, 0.06);
+    --dock-icon: rgba(0, 0, 0, 0.72);
+    --dock-icon-hover: #000000;
+    --dock-item-hover: rgba(0, 0, 0, 0.06);
+    --dock-book-border: rgba(0, 0, 0, 0.16);
+    --dock-book-text: #111111;
+    --dock-book-hover-bg: #111111;
+    --dock-book-hover-text: #ffffff;
+    --dock-divider: rgba(0, 0, 0, 0.1);
+    --dock-tile-fill-a: #ffffff;
+    --dock-tile-fill-b: #e6e6e6;
+    --dock-tile-edge-a: #d6d6d6;
+    --dock-tile-edge-b: #f4f4f4;
+    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   /* ----- Reset ----- */
@@ -183,6 +252,8 @@ const email = 'hey@jeremiahalalade.me';
     display: flex;
     flex-direction: column;
     padding: clamp(32px, 3.4vw, 52px) clamp(28px, 2.6vw, 40px);
+    /* extra bottom room so content never hides behind the fixed dock */
+    padding-bottom: clamp(96px, 10vw, 120px);
     transition: background-color 0.3s ease;
   }
 
@@ -281,11 +352,37 @@ const email = 'hey@jeremiahalalade.me';
   .email-icon { flex: none; }
 
   /* ----- Top-right cluster (email + theme toggle) ----- */
-  .top-right {
+  .top-right-col {
     flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .top-right {
     display: inline-flex;
     align-items: center;
     gap: clamp(12px, 1.4vw, 18px);
+  }
+
+  /* ----- Last visitor line ----- */
+  .last-visitor {
+    margin: 0;
+    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.3;
+    animation: lv-fade 0.4s ease both;
+  }
+  .last-visitor[hidden] { display: none; }
+  .lv-place {
+    color: var(--lv-accent);
+    font-weight: 500;
+  }
+  @keyframes lv-fade {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   /* ----- Theme toggle button ----- */
