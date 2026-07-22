@@ -49,7 +49,7 @@ const chatHref = 'https://cal.com/jeremiqque';
 
     <span class="divider" aria-hidden="true"></span>
 
-    <a class="book" href={chatHref} target="_blank" rel="noopener noreferrer">Book me</a>
+    <a class="book" href={chatHref} target="_blank" rel="noopener noreferrer">Book a call</a>
   </div>
 </nav>
 
@@ -58,7 +58,7 @@ const chatHref = 'https://cal.com/jeremiqque';
     position: fixed;
     /* stays pinned to the bottom of the viewport on every device, clearing
        the phone home-bar / safe area */
-    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(36px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;
@@ -68,7 +68,7 @@ const chatHref = 'https://cal.com/jeremiqque';
   }
 
   @media (max-width: 560px) {
-    .dock { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+    .dock { bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
   }
 
   .pill {

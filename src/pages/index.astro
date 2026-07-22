@@ -162,8 +162,8 @@ const year = new Date().getFullYear();
     --text-muted: rgba(242, 242, 242, 0.55);
     --lv-accent: #7cb0ff;
 
-    --dock-bg: rgba(48, 48, 52, 0.98);
-    --dock-border: rgba(255, 255, 255, 0.14);
+    --dock-bg: rgba(46, 46, 46, 0.98); /* matches the site's #2e2e2e surface */
+    --dock-border: rgba(255, 255, 255, 0.1);
     --dock-icon: rgba(255, 255, 255, 0.9);
     --dock-icon-hover: #ffffff;
     --dock-item-hover: rgba(255, 255, 255, 0.09);
@@ -176,8 +176,11 @@ const year = new Date().getFullYear();
     --dock-tile-fill-b: #414141;
     --dock-tile-edge-a: #373737;
     --dock-tile-edge-b: #262626;
-    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* orevba-style detailing: dark ring, soft float, top inner highlight +
+       bottom inner shade */
+    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 10px 30px rgba(0, 0, 0, 0.38),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28);
   }
 
   :root[data-theme='light'] {
@@ -219,8 +222,9 @@ const year = new Date().getFullYear();
     --dock-tile-fill-b: #e6e6e6;
     --dock-tile-edge-a: #d6d6d6;
     --dock-tile-edge-b: #f4f4f4;
-    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.06);
   }
 
   /* ----- Reset ----- */
