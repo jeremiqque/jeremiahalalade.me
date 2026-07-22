@@ -103,17 +103,18 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
 
   /* Outer shell (#2E2E2E) */
   .mw-card {
-    background: #2e2e2e;
+    background: var(--mw-shell, #2e2e2e);
     border-radius: 0;
     padding: clamp(12px, 1.4vw, 17px) clamp(16px, 2vw, 27px);
     display: flex;
     flex-direction: column;
     gap: clamp(8px, 1vw, 12px);
+    transition: background-color 0.3s ease;
   }
 
-  /* Inner panel (#202020) */
+  /* Inner panel */
   .mw-panel {
-    background: #202020;
+    background: var(--mw-panel, #202020);
     border-radius: 0;
     display: flex;
     align-items: center;
@@ -139,7 +140,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
   }
 
   .mw-title {
-    color: #f2f2f2;
+    color: var(--mw-title, #f2f2f2);
     font-size: clamp(1.15rem, 1.5vw, 1.4rem);
     font-weight: 600;
     line-height: 1.15;
@@ -152,7 +153,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
 
   .mw-artist {
     margin: 0;
-    color: #c9c9c9;
+    color: var(--mw-artist, #c9c9c9);
     font-size: clamp(0.95rem, 1.1vw, 1.05rem);
     white-space: nowrap;
     overflow: hidden;
@@ -191,7 +192,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
     align-items: center;
     gap: 10px;
     padding: 2px clamp(2px, 0.5vw, 6px) 2px;
-    color: #f2f2f2;
+    color: var(--mw-footer, #f2f2f2);
     font-size: clamp(0.9rem, 1vw, 1rem);
   }
 
@@ -199,7 +200,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
     flex: none;
     display: inline-flex;
     align-items: center;
-    color: #f2f2f2;
+    color: var(--mw-footer, #f2f2f2);
   }
   .mw-vinyl {
     display: inline-block;

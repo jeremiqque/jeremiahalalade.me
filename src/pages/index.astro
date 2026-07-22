@@ -13,6 +13,18 @@ const email = 'hey@jeremiahalalade.me';
     <meta name="description" content="Jeremiah Alalade — designer and engineer at Axiom Black." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23181818'/><rect x='3' y='3' width='26' height='26' rx='3' fill='%23202020'/></svg>" />
     <title>Jeremiah Alalade</title>
+    <script is:inline>
+      // Set theme before paint to avoid a flash of the wrong colors.
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
   </head>
   <body>
     <main class="card">
@@ -29,13 +41,25 @@ const email = 'hey@jeremiahalalade.me';
           </div>
         </div>
 
-        <a class="email" href={`mailto:${email}`}>
-          <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-            <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-            <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-          </svg>
-          <span>{email}</span>
-        </a>
+        <div class="top-right">
+          <a class="email" href={`mailto:${email}`}>
+            <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+              <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+            <span>{email}</span>
+          </a>
+
+          <button class="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+            <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="3" x2="12" y2="21" />
+              <line x1="12" y1="9" x2="16.65" y2="4.35" />
+              <line x1="12" y1="14.3" x2="19.37" y2="6.93" />
+              <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       <hr class="divider" />
@@ -48,6 +72,18 @@ const email = 'hey@jeremiahalalade.me';
     </main>
   </body>
 </html>
+
+<script is:inline>
+  (function () {
+    var btn = document.querySelector('.theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+</script>
 
 <style>
   /* ----- Fonts (local OTF, exposed as CSS variables) ----- */
@@ -70,11 +106,55 @@ const email = 'hey@jeremiahalalade.me';
     --font-heading: 'Nimbu Demo', sans-serif;
     --font-body: 'PP Neue Corp Compact', sans-serif;
 
+    --frame: 12px;
+  }
+
+  /* ----- Theme palettes ----- */
+  :root,
+  :root[data-theme='dark'] {
     --bg-frame: #181818;
     --bg-card: #202020;
     --text: #f2f2f2;
+    --text-strong: #fefefe;
+    --divider: #3d3d3d;
+    --link-underline: rgba(242, 242, 242, 0.45);
+    --link-underline-hover: #f2f2f2;
 
-    --frame: 12px;
+    --mw-shell: #2e2e2e;
+    --mw-panel: #202020;
+    --mw-title: #f2f2f2;
+    --mw-artist: #c9c9c9;
+    --mw-footer: #f2f2f2;
+
+    --pill-a: #1a1a1a;
+    --pill-b: #7e7e7e;
+
+    --toggle-bg: rgba(255, 255, 255, 0.06);
+    --toggle-border: rgba(255, 255, 255, 0.16);
+    --toggle-bg-hover: rgba(255, 255, 255, 0.12);
+  }
+
+  :root[data-theme='light'] {
+    --bg-frame: #dcdcdc;
+    --bg-card: #f3f3f3;
+    --text: #1f1f1f;
+    --text-strong: #0d0d0d;
+    --divider: #c2c2c2;
+    --link-underline: rgba(31, 31, 31, 0.4);
+    --link-underline-hover: #1f1f1f;
+
+    --mw-shell: #e5e5e5;
+    --mw-panel: #f3f3f3;
+    --mw-title: #1f1f1f;
+    --mw-artist: #5a5a5a;
+    --mw-footer: #1f1f1f;
+
+    --pill-a: #9a9a9a;
+    --pill-b: #d4d4d4;
+
+    --toggle-bg: rgba(0, 0, 0, 0.05);
+    --toggle-border: rgba(0, 0, 0, 0.14);
+    --toggle-bg-hover: rgba(0, 0, 0, 0.1);
   }
 
   /* ----- Reset ----- */
@@ -92,6 +172,7 @@ const email = 'hey@jeremiahalalade.me';
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* ----- Card (the #202020 panel inside the 12px frame) ----- */
@@ -102,6 +183,7 @@ const email = 'hey@jeremiahalalade.me';
     display: flex;
     flex-direction: column;
     padding: clamp(32px, 3.4vw, 52px) clamp(28px, 2.6vw, 40px);
+    transition: background-color 0.3s ease;
   }
 
   /* ----- Top region: intro + email ----- */
@@ -127,13 +209,38 @@ const email = 'hey@jeremiahalalade.me';
     font-size: clamp(2rem, 3.2vw, 2.6rem);
     line-height: 1;
     letter-spacing: 0.01em;
-    color: #fefefe;
+    color: var(--text-strong);
   }
 
   .hand {
     flex: none;
     height: clamp(54px, 5vw, 74px);
     width: auto;
+    cursor: pointer;
+    transform-origin: 50% 90%; /* rotate from the wrist */
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+  }
+
+  .hand:hover {
+    animation: hand-wave 0.8s ease-in-out infinite;
+  }
+
+  .hand:active {
+    animation: none;
+    transform: scale(1.18) rotate(-8deg);
+  }
+
+  @keyframes hand-wave {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(14deg); }
+    45% { transform: rotate(-10deg); }
+    70% { transform: rotate(8deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hand:hover { animation: none; transform: scale(1.06); }
+    .hand:active { transform: scale(1.06); }
   }
 
   .bio {
@@ -154,10 +261,10 @@ const email = 'hey@jeremiahalalade.me';
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 2px;
-    text-decoration-color: rgba(242, 242, 242, 0.45);
+    text-decoration-color: var(--link-underline);
     transition: text-decoration-color 0.2s ease;
   }
-  .bio-link:hover { text-decoration-color: #f2f2f2; }
+  .bio-link:hover { text-decoration-color: var(--link-underline-hover); }
 
   /* ----- Email (top-right) ----- */
   .email {
@@ -173,16 +280,60 @@ const email = 'hey@jeremiahalalade.me';
 
   .email-icon { flex: none; }
 
+  /* ----- Top-right cluster (email + theme toggle) ----- */
+  .top-right {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(12px, 1.4vw, 18px);
+  }
+
+  /* ----- Theme toggle button ----- */
+  .theme-toggle {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--text);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+  .theme-toggle:hover { background: var(--toggle-bg-hover); }
+  .theme-toggle:active { transform: scale(0.92); }
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+  .theme-toggle .icon {
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* Flip the contrast glyph when switching themes for a subtle cue. */
+  :root[data-theme='light'] .theme-toggle .icon { transform: rotate(180deg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle .icon { transition: none; }
+  }
+
   /* ----- Dashed divider (from the Figma frame) ----- */
   .divider {
     width: 100%;
-    height: 0;
+    height: 1px;
     border: none;
-    border-top: 1px dashed #3d3d3d;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--divider) 0 8px,
+      transparent 8px 20px
+    );
     margin: clamp(22px, 2.6vw, 34px) 0 0;
   }
 
-  /* ----- "More about me to come" pill ----- */
+  /* ----- "Don't touch me" pill ----- */
   .pill {
     align-self: flex-start;
     margin: 32px 0 0;
@@ -195,7 +346,7 @@ const email = 'hey@jeremiahalalade.me';
     font-family: var(--font-body);
     font-size: clamp(1rem, 1.2vw, 1.125rem);
     color: #ffffff;
-    background: linear-gradient(90deg, #1a1a1a 0%, #7e7e7e 100%);
+    background: linear-gradient(90deg, var(--pill-a) 0%, var(--pill-b) 100%);
     box-shadow:
       0 0 0 4px rgba(82, 82, 82, 0.6),
       inset 0 1px 1px rgba(255, 255, 255, 0.6),
