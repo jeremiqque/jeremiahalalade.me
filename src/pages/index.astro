@@ -31,6 +31,16 @@ const email = 'hey@jeremiahalalade.me';
     <main class="card">
       <header class="top">
         <div class="intro">
+          <button class="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+            <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="3" x2="12" y2="21" />
+              <line x1="12" y1="9" x2="16.65" y2="4.35" />
+              <line x1="12" y1="14.3" x2="19.37" y2="6.93" />
+              <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
+            </svg>
+          </button>
+
           <div class="name-row">
             <h1 class="name">Jeremiah Alalade</h1>
             <img class="hand" src="assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
@@ -42,41 +52,25 @@ const email = 'hey@jeremiahalalade.me';
           </div>
         </div>
 
-        <div class="top-right-col">
-        <div class="top-right">
-          <a class="email" href={`mailto:${email}`}>
-            <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-              <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-              <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-            </svg>
-            <span>{email}</span>
-          </a>
-
-          <button class="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
-            <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <line x1="12" y1="3" x2="12" y2="21" />
-              <line x1="12" y1="9" x2="16.65" y2="4.35" />
-              <line x1="12" y1="14.3" x2="19.37" y2="6.93" />
-              <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
-            </svg>
-          </button>
-        </div>
-
         <p class="last-visitor" data-last-visitor hidden>
           <span class="lv-label">Last visitor:</span>
           <span class="lv-place" data-lv-place></span>
         </p>
-        </div>
       </header>
 
       <hr class="divider" />
 
-      <div class="pill">More about me to come</div>
-
       <div class="music-slot">
         <MusicWidget />
       </div>
+
+      <a class="email" href={`mailto:${email}`}>
+        <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+          <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+          <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <span>{email}</span>
+      </a>
     </main>
 
     <Dock />
@@ -248,6 +242,7 @@ const email = 'hey@jeremiahalalade.me';
   .card {
     min-height: calc(100vh - (var(--frame) * 2));
     min-height: calc(100dvh - (var(--frame) * 2));
+    position: relative;
     background: var(--bg-card);
     display: flex;
     flex-direction: column;
@@ -337,35 +332,32 @@ const email = 'hey@jeremiahalalade.me';
   }
   .bio-link:hover { text-decoration-color: var(--link-underline-hover); }
 
-  /* ----- Email (top-right) ----- */
+  /* ----- Email (bottom-right of the card) ----- */
   .email {
-    flex: none;
+    position: absolute;
+    right: clamp(28px, 2.6vw, 40px);
+    bottom: clamp(28px, 3vw, 40px);
+    z-index: 5;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    max-width: calc(100% - clamp(56px, 5.2vw, 80px));
     color: var(--text);
     text-decoration: none;
     font-size: clamp(0.95rem, 1.1vw, 1.0625rem);
     white-space: nowrap;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
   }
+  .email:hover { opacity: 1; }
 
   .email-icon { flex: none; }
+  .email span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   /* ----- Top-right cluster (email + theme toggle) ----- */
-  .top-right-col {
-    flex: none;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-  }
-
-  .top-right {
-    display: inline-flex;
-    align-items: center;
-    gap: clamp(12px, 1.4vw, 18px);
-  }
-
   /* ----- Last visitor line ----- */
   .last-visitor {
     margin: 0;
@@ -389,10 +381,11 @@ const email = 'hey@jeremiahalalade.me';
   /* ----- Theme toggle button ----- */
   .theme-toggle {
     flex: none;
-    display: inline-grid;
+    display: grid;
     place-items: center;
     width: 38px;
     height: 38px;
+    margin: 0 0 clamp(18px, 2.4vw, 28px);
     padding: 0;
     border-radius: 999px;
     cursor: pointer;
@@ -463,11 +456,14 @@ const email = 'hey@jeremiahalalade.me';
   /* ----- Responsive: tablet / mobile ----- */
   @media (max-width: 720px) {
     .top {
-      flex-direction: column-reverse;
+      flex-direction: column;
       align-items: flex-start;
-      gap: clamp(28px, 8vw, 48px);
+      gap: clamp(20px, 5vw, 32px);
     }
     .name-row { gap: 30px; }
     .pill { margin: 28px 0 0; }
+    .last-visitor { text-align: left; }
+    /* lift the email clear of the centered dock on small screens */
+    .email { bottom: 92px; right: 16px; }
   }
 </style>
