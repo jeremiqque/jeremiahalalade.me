@@ -4,6 +4,7 @@
 import MusicWidget from '../components/MusicWidget.astro';
 import Dock from '../components/Dock.astro';
 const email = 'hey@jeremiahalalade.me';
+const year = new Date().getFullYear();
 ---
 
 <!doctype html>
@@ -71,6 +72,8 @@ const email = 'hey@jeremiahalalade.me';
         </svg>
         <span>{email}</span>
       </a>
+
+      <p class="footer">© {year} Jeremiah Alalade</p>
     </main>
 
     <Dock />
@@ -159,8 +162,8 @@ const email = 'hey@jeremiahalalade.me';
     --text-muted: rgba(242, 242, 242, 0.55);
     --lv-accent: #7cb0ff;
 
-    --dock-bg: rgba(36, 36, 38, 0.97);
-    --dock-border: rgba(255, 255, 255, 0.07);
+    --dock-bg: rgba(48, 48, 52, 0.98);
+    --dock-border: rgba(255, 255, 255, 0.14);
     --dock-icon: rgba(255, 255, 255, 0.9);
     --dock-icon-hover: #ffffff;
     --dock-item-hover: rgba(255, 255, 255, 0.09);
@@ -202,8 +205,8 @@ const email = 'hey@jeremiahalalade.me';
     --text-muted: rgba(31, 31, 31, 0.55);
     --lv-accent: #2563eb;
 
-    --dock-bg: rgba(255, 255, 255, 0.95);
-    --dock-border: rgba(0, 0, 0, 0.06);
+    --dock-bg: rgba(255, 255, 255, 0.98);
+    --dock-border: rgba(0, 0, 0, 0.12);
     --dock-icon: rgba(0, 0, 0, 0.72);
     --dock-icon-hover: #000000;
     --dock-item-hover: rgba(0, 0, 0, 0.06);
@@ -357,6 +360,18 @@ const email = 'hey@jeremiahalalade.me';
     text-overflow: ellipsis;
   }
 
+  /* ----- Footer (bottom-left of the card) ----- */
+  .footer {
+    position: absolute;
+    left: clamp(28px, 2.6vw, 40px);
+    bottom: clamp(28px, 3vw, 40px);
+    z-index: 5;
+    margin: 0;
+    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
   /* ----- Top-right cluster (email + theme toggle) ----- */
   /* ----- Last visitor line ----- */
   .last-visitor {
@@ -450,10 +465,17 @@ const email = 'hey@jeremiahalalade.me';
     align-self: stretch;
     width: 100%;
     max-width: none;
-    margin-top: clamp(28px, 4vw, 48px);
+    margin-top: clamp(14px, 1.8vw, 22px);
   }
 
   /* ----- Responsive: tablet / mobile ----- */
+  /* The dock is wide + centered; at/below 1024px it would collide with the
+     corner email/footer, so lift those above it. */
+  @media (max-width: 1024px) {
+    .email { bottom: 100px; right: 16px; }
+    .footer { bottom: 100px; left: 16px; }
+  }
+
   @media (max-width: 720px) {
     .top {
       flex-direction: column;
@@ -461,9 +483,34 @@ const email = 'hey@jeremiahalalade.me';
       gap: clamp(20px, 5vw, 32px);
     }
     .name-row { gap: 30px; }
-    .pill { margin: 28px 0 0; }
     .last-visitor { text-align: left; }
-    /* lift the email clear of the centered dock on small screens */
-    .email { bottom: 92px; right: 16px; }
+  }
+
+  /* On phones the corners would overlap each other — stack them, centered,
+     above the dock. */
+  @media (max-width: 480px) {
+    /* keep the name + wave on one line */
+    .name { font-size: 1.7rem; }
+    .name-row { gap: 14px; align-items: center; }
+    .hand { height: 42px; }
+
+    .footer {
+      left: 0;
+      right: 0;
+      text-align: center;
+      bottom: 134px;
+    }
+    .email {
+      left: 0;
+      right: 0;
+      justify-content: center;
+      max-width: none;
+      bottom: 106px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .name { font-size: 1.45rem; }
+    .hand { height: 38px; }
   }
 </style>

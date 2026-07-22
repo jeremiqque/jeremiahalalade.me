@@ -228,4 +228,10 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
     .mw-viz i { animation: none; transform: scaleY(0.6); }
     .music.is-playing .mw-vinyl { animation: none; }
   }
+
+  /* On narrow screens the equalizer would crush the song title/artist —
+     hide it and let the text use the full width. */
+  @media (max-width: 560px) {
+    .music.is-playing .mw-viz { display: none; }
+  }
 </style>
