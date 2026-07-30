@@ -1,0 +1,1826 @@
+---
+// Tabbed section beneath the music card.
+// Five tabs, each with its own layout ("kind"):
+//   cards     — Projects, Explorations: thumbnail left, copy right
+//   rows      — Webrings: compact link rows
+//   guestbook — read-only list of entries (no write path yet)
+//   shelf     — Bookshelf: cover grid
+// Square corners throughout. Active tab is mirrored in the URL hash.
+
+type CardItem = {
+  title: string;
+  blurb: string;
+  category: string;
+  /** Path under /public, e.g. "/assets/work/edh.png". Omit for the placeholder. */
+  thumb?: string;
+  /** Live site / repo. Renders the arrow icon beside the title. */
+  live?: string;
+  /** Case study or write-up. Renders the "More details" link. */
+  details?: string;
+};
+
+type RingItem = {
+  /** Used for the aria-labelledby link between the nav and its heading. */
+  id: string;
+  name: string;
+  note: string;
+  /** The ring's own homepage. */
+  href: string;
+  prev: string;
+  next: string;
+};
+type GuestItem = {
+  name: string;
+  message: string;
+  /** ISO date, e.g. "2026-07-22". */
+  date: string;
+  /** Shown under "Visit from" at the bottom of the stamp. */
+  country: string;
+  href?: string;
+};
+type BookItem = {
+  title: string;
+  author: string;
+  /** Path under /public, e.g. "/assets/books/deep-work.jpg". 2:3 works best. */
+  cover?: string;
+  /** e.g. "Reading", "Finished", "Abandoned". Optional. */
+  status?: string;
+  href?: string;
+};
+
+/** Optional line above a panel's content. */
+type Intro = { text: string; cta?: { label: string; href: string } };
+
+/** Optional titled block below a panel's content, pointing somewhere else. */
+type Outro = { title: string; text: string; cta: { label: string; href: string } };
+
+type Tab =
+  | { id: string; label: string; kind: 'cards'; intro?: Intro; outro?: Outro; items: CardItem[] }
+  | { id: string; label: string; kind: 'rings'; intro?: Intro; outro?: Outro; items: RingItem[] }
+  | { id: string; label: string; kind: 'guestbook'; intro?: Intro; outro?: Outro; items: GuestItem[] }
+  | { id: string; label: string; kind: 'shelf'; intro?: Intro; outro?: Outro; items: BookItem[] };
+
+const THUMB = '/assets/thumb-placeholder.svg';
+const COVER = '/assets/cover-placeholder.svg';
+
+// The name registered with each webring. Typed once: Bucket's docs note that a
+// mismatched name silently routes you to the wrong neighbours rather than
+// erroring, so this is a bad thing to duplicate.
+const RING_SLUG = 'jeremiah';
+
+// ---- Edit me: this is the only part you need to touch ----
+const tabs: Tab[] = [
+  {
+    id: 'projects',
+    label: 'Projects',
+    kind: 'cards',
+    // The href is a tab id, not a page — the hash switches tabs in place.
+    outro: {
+      title: 'Guestbook',
+      text: 'Leave your mark. A space for visitors to say hello, where everyone gets their own unique, custom-generated stamp :)',
+      cta: { label: 'Sign the guestbook', href: '#guestbook' },
+    },
+    items: [
+      {
+        title: 'DocuCheck Africa',
+        blurb:
+          "One expired permit can shut down an entire construction site. Not because anyone was careless, but because compliance still lives on spreadsheets, and a certificate that lapsed in March doesn't announce itself until an inspector turns up in June. DocuCheck reads the document instead. Upload a permit, a scan, or a photo taken in bad light on site, and it comes back with pass, warning or fail in plain English, in under thirty seconds. The hard part was never the AI. It was the rulebooks. COREN and NESREA in Nigeria, EPA and LUSPA in Ghana, NHBRC and SANS 10400 in South Africa. No existing tool encodes any of that, which is exactly why those documents still get checked by hand, or not at all.",
+        category: 'Product design / AI',
+        thumb: '/assets/work/docucheck.jpg',
+        live: 'https://docucheckafrica.jeremiahalalade.me/',
+      },
+      {
+        title: 'Pixels',
+        blurb:
+          "I wanted to dither an image and every tool I found wanted me to upload it somewhere first. For a photo I had not published yet, that felt like the wrong trade. So Pixels does all of it in the browser. Nothing leaves your machine. Six algorithms: Floyd-Steinberg, Atkinson, Bayer, Stucki, Burkes, Sierra. Threshold, strength and dot size to push around, a two colour palette you set yourself, then noise, vignette, glitch and chromatic aberration on top if you want to ruin it properly. Drop, paste or browse an image in. Export at up to 4x. No account, no upload, no waiting.",
+        category: 'Browser tool / Creative coding',
+        thumb: '/assets/work/pixels.jpg',
+        live: 'https://pixels.jeremiahalalade.me/',
+      },
+      {
+        title: 'Spring Citadel International School',
+        blurb:
+          "A school running since 2008 with nothing online a parent could judge it by. A Facebook page and word of mouth in Minna, and that was it. Parents ask the same three things before they enrol: what does this place actually stand for, how do the students do, and how do I start. So the site answers those in that order and then gets out of the way. It also has to load on a bad connection, on a phone, on the first try. That shaped more decisions than anything aesthetic did.",
+        category: 'Web design / Development',
+        thumb: '/assets/work/spring-citadel.jpg',
+        live: 'https://www.springcitadelschool.com/',
+      },
+    ],
+  },
+  {
+    id: 'explorations',
+    label: 'Explorations',
+    kind: 'cards',
+    items: [
+      {
+        title: 'Koffi',
+        blurb:
+          "Love for Koffi, fear of small places. That line came first and the whole page exists to earn it. Coffee brands crowd the frame with beans and steam and hands wrapped around mugs. This one leaves space instead, because room to breathe is the actual promise, and a layout can make that argument better than another sentence of copy can.",
+        category: 'Brand / Landing page',
+        thumb: '/assets/work/koffi.jpg',
+        live: 'https://koffi.jeremiahalalade.me/',
+      },
+      {
+        title: 'Picshare',
+        blurb:
+          "I miss the version of the internet where things felt like objects you could pick up. So this is a cork board. Pin photos to it, drag them around, leave them crooked. Nothing to sign up for, nothing to optimise, no feed. Just a board that behaves the way a board should when you push a photo across it.",
+        category: 'Interaction / Drag and drop',
+        thumb: '/assets/work/picshare.jpg',
+        live: 'https://picshare.jeremiahalalade.me/',
+      },
+      {
+        title: 'Weme',
+        blurb:
+          "Selling something abstract is where landing pages give up and reach for a photo of someone smiling at a laptop. Weme captures and organises ideas across work, life and everything in between, which means there is no product shot to lean on. So the page had to make an invisible thing feel like something you could hold, without overpromising what it does.",
+        category: 'Product / Landing page',
+        thumb: '/assets/work/weme.jpg',
+        live: 'https://weme.jeremiahalalade.me/',
+      },
+      {
+        title: 'Pricing',
+        blurb:
+          "Pricing pages are where clarity matters most and gets designed least. Three tiers for a payments product, a monthly and yearly toggle, and a FAQ underneath answering the things people actually email support about. The only test that counts is whether you can compare the plans without reading anything twice.",
+        category: 'UI / Pricing page',
+        thumb: '/assets/work/pricing.jpg',
+        live: 'https://pricing.jeremiahalalade.me/',
+      },
+      {
+        title: 'Hero',
+        blurb:
+          "One hero section on its own, with nowhere to hide. One headline, one supporting line, one action. When there is no second section to carry the weight, you find out very quickly whether the message is any good or whether you were relying on scroll to save it.",
+        category: 'UI / Hero section',
+        thumb: '/assets/work/hero.jpg',
+        live: 'https://hero.jeremiahalalade.me/',
+      },
+      {
+        title: 'Apex',
+        blurb:
+          "The footer is the part of the page everyone leaves until last, so I started there on purpose. Oversized type carries the sign off, thank you for your curiosity, let's build something cool, and the link columns sit underneath without competing with it. Most footers are a dumping ground. This one had to feel like an ending.",
+        category: 'UI / Footer section',
+        thumb: '/assets/work/apex.jpg',
+        live: 'https://apex.jeremiahalalade.me/',
+      },
+    ],
+  },
+  {
+    id: 'webrings',
+    label: 'Webrings',
+    kind: 'rings',
+    items: [
+      {
+        // No slug in these URLs by design: this ring resolves your position
+        // from the referrer header, which is why referrerpolicy matters below.
+        id: 'design-systems',
+        name: 'Design Systems Webring',
+        note: 'For design system practitioners',
+        href: 'https://design-system.club/',
+        prev: 'https://design-system.club/prev',
+        next: 'https://design-system.club/next',
+      },
+      {
+        id: 'bucket',
+        name: 'Bucket Webring',
+        note: 'For people who like making things',
+        href: 'https://webring.bucketfish.me/',
+        prev: `https://webring.bucketfish.me/redirect.html?to=prev&name=${RING_SLUG}`,
+        next: `https://webring.bucketfish.me/redirect.html?to=next&name=${RING_SLUG}`,
+      },
+      {
+        id: 'hotline',
+        name: 'Hotline Webring',
+        note: 'For personal and creative sites',
+        href: 'https://hotlinewebring.club/',
+        prev: `https://hotlinewebring.club/${RING_SLUG}/previous`,
+        next: `https://hotlinewebring.club/${RING_SLUG}/next`,
+      },
+    ],
+  },
+  {
+    id: 'guestbook',
+    label: 'Guestbook',
+    kind: 'guestbook',
+    items: [
+      {
+        name: 'Fabio',
+        message: 'Super neat guestbook. Very nostalgic too. Put a smile on my face.',
+        date: '2026-07-22',
+        country: 'Brazil',
+        href: '#',
+      },
+      {
+        name: 'Likando',
+        message: 'Your work inspires me. Read a few of the writeups and the detail is unreal.',
+        date: '2026-07-01',
+        country: 'Zambia',
+      },
+      {
+        name: 'Leon',
+        message: 'Thank you for visiting my site. You have a cool website and the guestbook is even better.',
+        date: '2026-06-27',
+        country: 'Iceland',
+      },
+    ],
+  },
+  {
+    id: 'bookshelf',
+    label: 'Bookshelf',
+    kind: 'shelf',
+    items: [
+      {
+        title: 'The Design of Everyday Things',
+        author: 'Don Norman',
+        cover: '/assets/books/design-of-everyday-things.jpg',
+      },
+      {
+        title: 'Atomic Habits',
+        author: 'James Clear',
+        cover: '/assets/books/atomic-habits.jpg',
+      },
+      {
+        title: 'The Steal Like an Artist Journal',
+        author: 'Austin Kleon',
+        cover: '/assets/books/steal-like-an-artist-journal.jpg',
+      },
+      {
+        title: 'Eat That Frog!',
+        author: 'Brian Tracy',
+        cover: '/assets/books/eat-that-frog.jpg',
+      },
+      {
+        title: 'Just Shut Up and Do It!',
+        author: 'Brian Tracy',
+        cover: '/assets/books/just-shut-up-and-do-it.jpg',
+      },
+      {
+        title: 'The Richest Man in Babylon',
+        author: 'George S. Clason',
+        cover: '/assets/books/richest-man-in-babylon.jpg',
+      },
+      {
+        title: 'Deep Work',
+        author: 'Cal Newport',
+        cover: '/assets/books/deep-work.jpg',
+      },
+      {
+        title: 'Ideas Rule The World',
+        author: 'Sam Adeyemi',
+        cover: '/assets/books/ideas-rule-the-world.jpg',
+      },
+      {
+        title: 'Sell Like Crazy',
+        author: 'Sabri Suby',
+        cover: '/assets/books/sell-like-crazy.jpg',
+      },
+      {
+        title: '$100M Offers',
+        author: 'Alex Hormozi',
+        cover: '/assets/books/100m-offers.jpg',
+      },
+      {
+        title: 'The 48 Laws of Power',
+        author: 'Robert Greene',
+        cover: '/assets/books/48-laws-of-power.jpg',
+      },
+      {
+        title: 'Making It Big',
+        author: 'Femi Otedola',
+        cover: '/assets/books/making-it-big.jpg',
+      },
+      {
+        title: 'Ikigai',
+        author: 'García and Miralles',
+        cover: '/assets/books/ikigai.jpg',
+      },
+      {
+        title: 'The Subtle Art of Not Giving a F*ck',
+        author: 'Mark Manson',
+        cover: '/assets/books/subtle-art.jpg',
+      },
+      {
+        title: "So Good They Can't Ignore You",
+        author: 'Cal Newport',
+        cover: '/assets/books/so-good-they-cant-ignore-you.jpg',
+      },
+      {
+        title: 'The Jewish Phenomenon',
+        author: 'Steven Silbiger',
+        cover: '/assets/books/the-jewish-phenomenon.jpg',
+      },
+    ],
+  },
+];
+
+const fmtDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+---
+
+<section class="tabs" data-tabs aria-label="More about me">
+  <div class="tablist" role="tablist" aria-label="Sections">
+    {
+      tabs.map((tab, i) => (
+        <button
+          class="tab"
+          type="button"
+          role="tab"
+          id={`tab-${tab.id}`}
+          data-tab={tab.id}
+          aria-controls={`panel-${tab.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          {tab.label}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    tabs.map((tab, i) => (
+      <div
+        class="panel"
+        role="tabpanel"
+        id={`panel-${tab.id}`}
+        data-panel={tab.id}
+        aria-labelledby={`tab-${tab.id}`}
+        tabindex="0"
+        hidden={i !== 0}
+      >
+        {tab.intro && (
+          <p class="panel-intro">
+            {tab.intro.text}
+            {tab.intro.cta && (
+              <a class="panel-intro-cta" href={tab.intro.cta.href}>{tab.intro.cta.label}</a>
+            )}
+          </p>
+        )}
+
+        {tab.items.length === 0 && <p class="empty">Building something for this one.</p>}
+
+        {tab.kind === 'cards' && tab.items.length > 0 && (
+          <ul class="cards">
+            {tab.items.map((item) => (
+              <li class="card">
+                <div class="card-media">
+                  <img
+                    src={item.thumb || THUMB}
+                    alt={item.thumb ? `${item.title} preview` : ''}
+                    loading="lazy"
+                    decoding="async"
+                    width="320"
+                    height="200"
+                    draggable="false"
+                  />
+                </div>
+
+                <div class="card-body">
+                  <div class="card-head">
+                    <h3 class="card-title">{item.title}</h3>
+                    {item.live && (
+                      <a
+                        class="card-out"
+                        href={item.live}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${item.title} in a new tab`}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+                          <path d="M14 4h6v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M20 4 11 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                          <path d="M17 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+
+                  <p class="card-blurb" data-blurb id={`blurb-${tab.id}-${item.title.replace(/\W+/g, '-').toLowerCase()}`}>
+                    {item.blurb}
+                  </p>
+
+                  {item.details && (
+                    <a class="card-writeup" href={item.details}>
+                      Read the full writeup →
+                    </a>
+                  )}
+
+                  <div class="card-foot">
+                    <span class="card-cat">{item.category}</span>
+                    <button
+                      class="card-more"
+                      type="button"
+                      data-more
+                      aria-expanded="false"
+                      aria-controls={`blurb-${tab.id}-${item.title.replace(/\W+/g, '-').toLowerCase()}`}
+                      hidden
+                    >
+                      More Details
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {tab.kind === 'rings' && tab.items.length > 0 && (
+          <ul class="rings">
+            {tab.items.map((item) => (
+              <li class="ring">
+                {/* nav + heading, because Design Systems Webring allows any
+                    styling "as long as it's done in an accessible way", and
+                    their own snippet is a labelled landmark. */}
+                <nav class="ring-nav" aria-labelledby={`ring-${item.id}`}>
+                  <a
+                    class="ring-arrow"
+                    href={item.prev}
+                    rel="external"
+                    referrerpolicy="strict-origin"
+                    aria-label={`Previous site in ${item.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+
+                  <div class="ring-body">
+                    <h3 class="ring-name" id={`ring-${item.id}`}>
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">{item.name}</a>
+                    </h3>
+                    <p class="ring-note">{item.note}</p>
+                  </div>
+
+                  <a
+                    class="ring-arrow"
+                    href={item.next}
+                    rel="external"
+                    referrerpolicy="strict-origin"
+                    aria-label={`Next site in ${item.name}`}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </a>
+                </nav>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {tab.kind === 'guestbook' && (
+          <ul class="guests" data-guests>
+            {/* Add tile: sits in the first cell and swaps to the form on click. */}
+            <li class="guest guest-add" data-add>
+              <button class="add-plus" type="button" data-add-open>
+                <span class="add-icon" aria-hidden="true">+</span>
+                <span class="add-label">Sign the guestbook</span>
+              </button>
+
+              <form class="sign" data-sign>
+                <input
+                  class="sign-input"
+                  type="text"
+                  name="name"
+                  maxlength="32"
+                  required
+                  placeholder="Your name"
+                  aria-label="Your name"
+                  autocomplete="nickname"
+                />
+                <textarea
+                  class="sign-input sign-msg"
+                  name="message"
+                  maxlength="280"
+                  rows="3"
+                  required
+                  placeholder="Say something"
+                  aria-label="Your message"
+                />
+                {/* type is text, not url, on purpose: type="url" rejects a bare
+                    domain, which the server accepts and normalises to https. */}
+                <input
+                  class="sign-input"
+                  type="text"
+                  name="link"
+                  maxlength="200"
+                  placeholder="Link (optional)"
+                  aria-label="Your link, optional"
+                  autocomplete="url"
+                  inputmode="url"
+                />
+
+                {/* Honeypot. Hidden from people, catnip for bots. */}
+                <input class="sign-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+                <div class="sign-actions">
+                  <button class="sign-btn" type="submit">Sign</button>
+                  <button class="sign-cancel" type="button" data-add-close>Cancel</button>
+                </div>
+
+                <p class="sign-note" data-sign-note role="status">
+                  Your country is stamped on automatically.
+                </p>
+              </form>
+            </li>
+
+            {tab.items.map((item) => (
+              <li class="guest" data-placeholder>
+                <span class="corner tl" aria-hidden="true" />
+                <span class="corner tr" aria-hidden="true" />
+                <span class="corner bl" aria-hidden="true" />
+                <span class="corner br" aria-hidden="true" />
+
+                <span class="postmark" aria-hidden="true">
+                  <span>Visited</span>
+                  <span>{item.date.slice(0, 4)}</span>
+                </span>
+
+                <time class="guest-date" datetime={item.date}>{fmtDate(item.date)}</time>
+
+                <p class="guest-msg">{item.message}</p>
+
+                <div class="guest-foot">
+                  {item.href ? (
+                    <a class="guest-name" href={item.href} target="_blank" rel="noopener noreferrer">
+                      {item.name}
+                    </a>
+                  ) : (
+                    <span class="guest-name">{item.name}</span>
+                  )}
+                  <span class="guest-from">Visit from</span>
+                  <span class="guest-country">{item.country}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Cloned for live entries. Rendered by Astro so the clones inherit the
+            scoped-style attribute that hand-built DOM nodes would not get. */}
+        {tab.kind === 'guestbook' && (
+          <template data-stamp>
+            <li class="guest">
+              <span class="corner tl" aria-hidden="true" />
+              <span class="corner tr" aria-hidden="true" />
+              <span class="corner bl" aria-hidden="true" />
+              <span class="corner br" aria-hidden="true" />
+
+              <span class="postmark" aria-hidden="true">
+                <span>Visited</span>
+                <span data-year />
+              </span>
+
+              <time class="guest-date" data-date />
+
+              <p class="guest-msg" data-message />
+
+              {/* Both name variants ship in the template and JS deletes the
+                  unused one. Creating an <a> on the fly would lose Astro's
+                  scoped-style attribute and render unstyled. */}
+              <div class="guest-foot">
+                <a class="guest-name" data-name-link target="_blank" rel="noopener noreferrer nofollow" />
+                <span class="guest-name" data-name />
+                <span class="guest-from">Visit from</span>
+                <span class="guest-country" data-country />
+              </div>
+            </li>
+          </template>
+        )}
+
+        {tab.kind === 'shelf' && tab.items.length > 0 && (
+          <ul class="shelf">
+            {tab.items.map((item) => (
+              <li class="book">
+                {/* Mat frame around the cover, the way a print sits in a mount. */}
+                <div class="book-frame">
+                  <div class="book-cover">
+                    <img
+                      src={item.cover || COVER}
+                      alt={item.cover ? `${item.title} cover` : ''}
+                      loading="lazy"
+                      decoding="async"
+                      width="200"
+                      height="300"
+                      draggable="false"
+                    />
+                  </div>
+                </div>
+
+                {/* Hidden until hover or keyboard focus. */}
+                <div class="book-meta">
+                  <p class="book-title">
+                    {item.href ? (
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">{item.title}</a>
+                    ) : (
+                      item.title
+                    )}
+                  </p>
+                  <p class="book-author">{item.author}</p>
+                  {item.status && <p class="book-status">{item.status}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {tab.outro && (
+          <aside class="outro">
+            <h3 class="outro-title">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+                <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v14.5H5.5A1.5 1.5 0 0 0 4 20V5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                <path d="M8 8.5h7M8 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+              <span>{tab.outro.title}</span>
+            </h3>
+            <p class="outro-text">{tab.outro.text}</p>
+            <a class="outro-cta" href={tab.outro.cta.href} data-tab-link>
+              {tab.outro.cta.label}
+            </a>
+          </aside>
+        )}
+      </div>
+    ))
+  }
+</section>
+
+<script is:inline>
+  (function () {
+    var root = document.querySelector('[data-tabs]');
+    if (!root) return;
+
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-tab]'));
+    var panels = Array.prototype.slice.call(root.querySelectorAll('[data-panel]'));
+    if (!tabs.length) return;
+
+    function select(id, opts) {
+      var found = false;
+      tabs.forEach(function (tab) {
+        var on = tab.dataset.tab === id;
+        if (on) found = true;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.tabIndex = on ? 0 : -1;
+      });
+      if (!found) return false;
+
+      panels.forEach(function (panel) {
+        panel.hidden = panel.dataset.panel !== id;
+      });
+
+      if (opts && opts.focus) {
+        var active = root.querySelector('[data-tab="' + id + '"]');
+        if (active) active.focus();
+      }
+      if (opts && opts.hash && history.replaceState) {
+        history.replaceState(null, '', '#' + id);
+      }
+      return true;
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        select(tab.dataset.tab, { hash: true });
+      });
+    });
+
+    // Left/Right/Home/End move between tabs, per the WAI-ARIA tabs pattern.
+    root.querySelector('[role="tablist"]').addEventListener('keydown', function (e) {
+      var i = tabs.indexOf(document.activeElement);
+      if (i === -1) return;
+      var next = null;
+      if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      if (next === null) return;
+      e.preventDefault();
+      select(tabs[next].dataset.tab, { focus: true, hash: true });
+    });
+
+    // Restore from the hash on load, and follow back/forward.
+    var fromHash = (location.hash || '').replace('#', '');
+    if (fromHash) select(fromHash);
+    window.addEventListener('hashchange', function () {
+      select((location.hash || '').replace('#', ''));
+    });
+
+    // In-panel links that point at another tab. hashchange covers most of it,
+    // but it doesn't fire when the hash is already the target, so handle the
+    // click directly. Both function declarations below are hoisted, and by the
+    // time anyone clicks, the script has finished running.
+    Array.prototype.slice.call(root.querySelectorAll('[data-tab-link]')).forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var id = (link.getAttribute('href') || '').replace('#', '');
+        if (!select(id, { hash: true })) return;
+        e.preventDefault();
+        measure();
+        if (id === 'guestbook') loadGuests();
+        var active = root.querySelector('[data-tab="' + id + '"]');
+        if (active) active.focus();
+      });
+    });
+
+    // ----- "More details" / "Less details" blurb expansion -----
+    var COLLAPSED = '4.5em';
+
+    function setup(btn) {
+      var card = btn.closest('.card');
+      var blurb = card && card.querySelector('[data-blurb]');
+      if (!blurb) return;
+
+      // Nothing clipped means nothing to reveal — leave the button hidden.
+      if (blurb.scrollHeight <= blurb.clientHeight + 1) return;
+      btn.hidden = false;
+
+      btn.addEventListener('click', function () {
+        var opening = !card.classList.contains('is-open');
+        btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        btn.textContent = opening ? 'Less Details' : 'More Details';
+
+        if (opening) {
+          // Drop the clamp first so scrollHeight reports the true full height,
+          // then animate max-height up to it.
+          card.classList.add('is-open');
+          blurb.style.maxHeight = blurb.scrollHeight + 'px';
+        } else {
+          // Stay unclamped through the collapse, otherwise the clamp snaps to
+          // 3 lines instantly and there is nothing to watch. The clamp goes
+          // back on once the transition lands.
+          blurb.style.maxHeight = blurb.scrollHeight + 'px';
+          requestAnimationFrame(function () {
+            blurb.style.maxHeight = COLLAPSED;
+          });
+          var settled = false;
+          var finish = function () {
+            if (settled) return;
+            settled = true;
+            blurb.removeEventListener('transitionend', onEnd);
+            card.classList.remove('is-open');
+            blurb.style.maxHeight = '';
+          };
+          var onEnd = function (e) {
+            if (e.propertyName === 'max-height') finish();
+          };
+          blurb.addEventListener('transitionend', onEnd);
+          // transitionend never fires under prefers-reduced-motion, where the
+          // transition is off — so always keep a timer as the backstop.
+          setTimeout(finish, 400);
+        }
+      });
+    }
+
+    // ----- Guestbook: live entries + signing -----
+    var guests = root.querySelector('[data-guests]');
+    var signForm = root.querySelector('[data-sign]');
+    var signNote = root.querySelector('[data-sign-note]');
+    var DEFAULT_NOTE = signNote ? signNote.textContent : '';
+
+    function fmtDate(iso) {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    // Clone Astro's rendered <template> rather than building nodes by hand.
+    // Astro scopes this component's CSS with a generated data-astro-cid-*
+    // attribute that it only adds to markup it compiled — nodes made with
+    // createElement never get it, so they render completely unstyled.
+    var stampTpl = root.querySelector('template[data-stamp]');
+
+    function stamp(entry) {
+      if (!stampTpl) return null;
+      var li = stampTpl.content.firstElementChild.cloneNode(true);
+
+      var set = function (sel, text) {
+        var el = li.querySelector(sel);
+        if (el) el.textContent = text;
+        return el;
+      };
+
+      set('[data-year]', String(entry.date || '').slice(0, 4));
+      var time = set('[data-date]', fmtDate(entry.date));
+      if (time) time.setAttribute('datetime', entry.date || '');
+      set('[data-message]', entry.message || '');
+      set('[data-country]', entry.country || 'Somewhere');
+
+      // Keep whichever name variant the entry calls for, drop the other.
+      var link = li.querySelector('[data-name-link]');
+      var plain = li.querySelector('[data-name]');
+      if (entry.href) {
+        if (link) {
+          link.textContent = entry.name || '';
+          link.setAttribute('href', entry.href);
+        }
+        if (plain) plain.remove();
+      } else {
+        if (plain) plain.textContent = entry.name || '';
+        if (link) link.remove();
+      }
+
+      return li;
+    }
+
+    // Removes only the seeded placeholders, never the add tile.
+    function clearPlaceholders() {
+      Array.prototype.slice
+        .call(guests.querySelectorAll('[data-placeholder]'))
+        .forEach(function (el) { el.remove(); });
+    }
+
+    var loaded = false;
+    function loadGuests() {
+      if (loaded || !guests) return;
+      loaded = true;
+      fetch('/api/guestbook')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          var entries = (data && data.entries) || [];
+          // Leave the placeholders alone until there's something real to show.
+          if (!entries.length) return;
+          clearPlaceholders();
+          var addTile = guests.querySelector('[data-add]');
+          entries.forEach(function (entry) {
+            var li = stamp(entry);
+            if (!li) return;
+            li.setAttribute('data-live', '1');
+            guests.appendChild(li);
+          });
+          // Keep the add tile first.
+          if (addTile) guests.insertBefore(addTile, guests.firstChild);
+        })
+        .catch(function () {});
+    }
+
+    // ----- Add tile open / close -----
+    var addTile = root.querySelector('[data-add]');
+    var addOpen = root.querySelector('[data-add-open]');
+    var addClose = root.querySelector('[data-add-close]');
+
+    function openAdd() {
+      if (!addTile) return;
+      addTile.classList.add('is-signing');
+      var first = addTile.querySelector('.sign-input');
+      if (first) first.focus();
+    }
+    function closeAdd() {
+      if (!addTile) return;
+      addTile.classList.remove('is-signing');
+      if (addOpen) addOpen.focus();
+    }
+
+    if (addOpen) addOpen.addEventListener('click', openAdd);
+    if (addClose) addClose.addEventListener('click', closeAdd);
+    if (addTile) {
+      addTile.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && addTile.classList.contains('is-signing')) closeAdd();
+      });
+    }
+
+    if (signForm) {
+      signForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = signForm.querySelector('.sign-btn');
+        var data = {
+          name: signForm.elements.name.value,
+          message: signForm.elements.message.value,
+          link: signForm.elements.link.value,
+          website: signForm.elements.website.value,
+        };
+
+        btn.disabled = true;
+        if (signNote) signNote.textContent = 'Signing…';
+
+        fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+          .then(function (r) {
+            return r.json().then(function (body) { return { ok: r.ok, body: body }; });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              if (signNote) signNote.textContent = res.body.error || 'That did not go through.';
+              return;
+            }
+            if (res.body.entry && guests) {
+              // Drop the seeded placeholders the first time a real entry lands.
+              if (!guests.querySelector('[data-live]')) clearPlaceholders();
+              var li = stamp(res.body.entry);
+              if (li) {
+                li.setAttribute('data-live', '1');
+                // After the add tile, so it stays in the first cell.
+                guests.insertBefore(li, addTile ? addTile.nextSibling : guests.firstChild);
+              }
+            }
+            signForm.reset();
+            if (signNote) signNote.textContent = 'Signed. Thanks for stopping by.';
+            setTimeout(closeAdd, 1200);
+          })
+          .catch(function () {
+            if (signNote) signNote.textContent = 'Network trouble. Try again.';
+          })
+          .then(function () {
+            btn.disabled = false;
+            setTimeout(function () {
+              if (signNote) signNote.textContent = DEFAULT_NOTE;
+            }, 6000);
+          });
+      });
+    }
+
+    var mores = Array.prototype.slice.call(root.querySelectorAll('[data-more]'));
+    // Panels other than the first are hidden, so their blurbs measure 0 until
+    // shown. Re-run setup for a panel the first time it becomes visible.
+    function measure() {
+      mores.forEach(function (btn) {
+        if (btn.dataset.ready) return;
+        var panel = btn.closest('[data-panel]');
+        if (panel && panel.hidden) return;
+        btn.dataset.ready = '1';
+        setup(btn);
+      });
+    }
+    measure();
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        measure();
+        if (tab.dataset.tab === 'guestbook') loadGuests();
+      });
+      tab.addEventListener('keyup', measure);
+    });
+    // Deep link straight to #guestbook should fetch without a click.
+    if (fromHash === 'guestbook') loadGuests();
+  })();
+</script>
+
+<style>
+  .tabs {
+    width: 100%;
+    margin-top: clamp(18px, 2.2vw, 28px);
+    font-family: var(--font-body, sans-serif);
+  }
+
+  /* ----- Tab row ----- */
+  .tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tab {
+    appearance: none;
+    cursor: pointer;
+    padding: 9px 18px;
+    border-radius: 0;
+    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    background: transparent;
+    color: var(--tab-text, rgba(242, 242, 242, 0.6));
+    font-family: inherit;
+    font-size: clamp(0.9rem, 1.05vw, 1rem);
+    line-height: 1;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .tab:hover {
+    color: var(--tab-text-hover, #f2f2f2);
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+  }
+
+  .tab:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+
+  /* Selected tab goes solid accent. Border matches the fill so the pill reads
+     as one shape rather than a filled box inside an outline. */
+  .tab[aria-selected='true'] {
+    border-style: solid;
+    border-color: var(--tab-on-bg, #cb4834);
+    background: var(--tab-on-bg, #cb4834);
+    color: var(--tab-on-text, #ffffff);
+  }
+  .tab[aria-selected='true']:hover {
+    border-color: var(--tab-on-bg, #cb4834);
+    color: var(--tab-on-text, #ffffff);
+  }
+
+  /* ----- Panels ----- */
+  .panel {
+    margin-top: clamp(14px, 1.6vw, 20px);
+    animation: tab-fade 0.22s ease both;
+  }
+  .panel[hidden] { display: none; }
+  .panel:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 4px;
+  }
+
+  @keyframes tab-fade {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ----- Projects / Explorations: cards ----- */
+  .cards {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 1.4vw, 18px);
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    gap: clamp(14px, 1.8vw, 26px);
+    padding: clamp(9px, 1.1vw, 12px);
+    background: var(--mw-shell, #2e2e2e);
+    border: 1px solid var(--tab-active-border, rgba(255, 255, 255, 0.14));
+    border-radius: 0;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+  }
+
+  .card-media {
+    background: var(--mw-panel, #202020);
+  }
+  .card-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .card-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(4px, 0.6vw, 8px) clamp(6px, 0.8vw, 12px) clamp(6px, 0.8vw, 10px) 0;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: clamp(8px, 1vw, 12px);
+    border-bottom: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+  }
+
+  .card-title {
+    margin: 0;
+    min-width: 0;
+    font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-strong);
+  }
+
+  .card-out {
+    flex: none;
+    display: inline-flex;
+    color: var(--text-muted);
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  .card-out:hover {
+    color: var(--text-strong);
+    transform: translate(1px, -1px);
+  }
+  .card-out:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  /* Collapsed to 3 lines. max-height is what actually animates — the clamp
+     only supplies the ellipsis, and line-clamp itself can't transition. */
+  .card-blurb {
+    margin: clamp(10px, 1.2vw, 14px) 0 0;
+    /* The card spans the full width, so at 1920px the text column is ~1450px.
+       Three lines at that measure is ~200 characters each. Cap the line length
+       without narrowing the card. */
+    max-width: 68ch;
+    font-size: clamp(0.88rem, 1.02vw, 0.98rem);
+    line-height: 1.5;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 4.5em; /* 3 lines x 1.5 */
+    transition: max-height 0.3s ease;
+  }
+
+  .card.is-open .card-blurb {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+
+  /* Only revealed once the blurb is expanded. */
+  .card-writeup {
+    display: none;
+    margin: clamp(10px, 1.2vw, 14px) 0 0;
+    align-self: flex-start;
+    font-size: clamp(0.85rem, 0.98vw, 0.93rem);
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--link-underline);
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .card.is-open .card-writeup { display: inline-block; }
+  .card-writeup:hover {
+    color: var(--text-strong);
+    border-bottom-color: var(--link-underline-hover);
+  }
+  .card-writeup:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  .card-foot {
+    margin-top: auto;
+    padding-top: clamp(12px, 1.5vw, 18px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 12px;
+  }
+
+  /* Wraps rather than truncating — these labels are short but the footer gets
+     tight once the toggle sits beside them. */
+  .card-cat {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-style: italic;
+    font-size: clamp(0.8rem, 0.92vw, 0.88rem);
+    line-height: 1.4;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .card-more {
+    flex: none;
+    appearance: none;
+    padding: 0;
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.875rem; /* 14px, matching the reference */
+    line-height: 1.4;
+    color: var(--tab-more, rgba(242, 242, 242, 0.6));
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .card-more[hidden] { display: none; }
+  .card-more:hover {
+    color: var(--text-strong);
+    border-bottom-color: var(--link-underline-hover);
+  }
+  .card-more:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  /* ----- Webrings: prev / name / next rows ----- */
+  .rings {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    /* Full width, matching the music card above. */
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .ring-nav {
+    display: grid;
+    /* Fixed arrow cells, flexible middle. minmax(0, 1fr) so a long ring name
+       can't push the row past the container. */
+    grid-template-columns: 56px minmax(0, 1fr) 56px;
+    align-items: stretch;
+    background: var(--mw-shell, #2e2e2e);
+    border: 1px solid var(--tab-active-border, rgba(255, 255, 255, 0.14));
+    border-radius: 0;
+    transition: border-color 0.2s ease;
+  }
+  .ring-nav:hover,
+  .ring-nav:focus-within {
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+  }
+
+  /* Whole cell is the target, not just the glyph. */
+  .ring-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .ring-arrow:first-child {
+    border-right: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+  }
+  .ring-arrow:last-child {
+    border-left: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+  }
+  /* Only the hovered arrow lights up, so direction stays legible. */
+  .ring-arrow:hover {
+    color: var(--ring-accent, #db5b46);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .ring-arrow:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -3px;
+  }
+
+  .ring-body {
+    min-width: 0;
+    padding: 18px 16px;
+    text-align: center;
+  }
+
+  .ring-name {
+    margin: 0;
+    font-size: clamp(0.92rem, 1.05vw, 1rem);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+  }
+  .ring-name a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .ring-name a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .ring-name a:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  .ring-note {
+    margin: 3px 0 0;
+    font-size: clamp(0.78rem, 0.9vw, 0.8125rem);
+    line-height: 1.4;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+
+  /* Intro line above a panel's content. */
+  .panel-intro {
+    margin: 0 0 clamp(14px, 1.8vw, 20px);
+    max-width: 62ch;
+    font-size: clamp(0.88rem, 1.02vw, 0.98rem);
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  /* ----- Outro: titled block below a panel, pointing at another tab ----- */
+  .outro {
+    margin-top: clamp(22px, 2.6vw, 32px);
+    padding-top: clamp(16px, 2vw, 22px);
+    border-top: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    max-width: 62ch;
+  }
+
+  .outro-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--text-strong);
+  }
+  .outro-title svg {
+    flex: none;
+    color: var(--link-accent, #c77667);
+  }
+
+  .outro-text {
+    margin: 8px 0 0;
+    font-size: clamp(0.88rem, 1.02vw, 0.98rem);
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  .outro-cta {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: clamp(0.85rem, 0.98vw, 0.93rem);
+    color: var(--link-accent, #c77667);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--link-accent-underline, rgba(199, 118, 103, 0.5));
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+  .outro-cta:hover {
+    color: var(--link-accent-hover, #f3a89a);
+    text-decoration-color: currentColor;
+  }
+  .outro-cta:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  /* Optional call to action, on its own line under the intro copy. */
+  .panel-intro-cta {
+    display: block;
+    margin-top: 6px;
+    width: fit-content;
+    color: var(--link-accent, #c77667);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--link-accent-underline, rgba(199, 118, 103, 0.5));
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+  .panel-intro-cta:hover {
+    color: var(--link-accent-hover, #f3a89a);
+    text-decoration-color: currentColor;
+  }
+  .panel-intro-cta:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  /* ----- Guestbook: add tile ----- */
+  /* Two classes deep on purpose: .guest is declared further down the sheet, so
+     a single .guest-add selector would lose the border and ::before contest. */
+  .guest.guest-add {
+    /* Dashed and empty until clicked, so it reads as a slot rather than a card. */
+    justify-content: center;
+    padding: 16px;
+    background: transparent;
+    border-style: dashed;
+  }
+  .guest.guest-add:hover {
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+  }
+  .guest.guest-add::before { content: none; }
+
+  .add-plus {
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: 1;
+    width: 100%;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--text-muted);
+    font-family: inherit;
+    transition: color 0.2s ease;
+  }
+  .add-plus:hover { color: var(--text-strong); }
+  .add-plus:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 4px;
+  }
+  .guest-add.is-signing .add-plus { display: none; }
+
+  .add-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid currentColor;
+    font-size: 1.5rem;
+    line-height: 1;
+    /* The glyph sits high in the em box; nudge it back onto the optical centre. */
+    padding-bottom: 3px;
+  }
+
+  .add-label {
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ----- Guestbook: sign form (lives inside the add tile) ----- */
+  .sign {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .guest-add.is-signing .sign { display: flex; }
+
+  .sign-input {
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    transition: border-color 0.2s ease;
+  }
+  .sign-msg {
+    flex: 1;
+    min-height: 62px;
+    resize: none;
+    font-family: inherit;
+  }
+  .sign-input::placeholder { color: var(--text-muted); }
+  .sign-input:hover { border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32)); }
+  .sign-input:focus {
+    outline: none;
+    border-style: solid;
+    border-color: var(--text);
+  }
+
+  /* Off-screen rather than display:none, so bots still see a fillable field. */
+  .sign-trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .sign-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sign-cancel {
+    appearance: none;
+    padding: 9px 4px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+  }
+  .sign-cancel:hover { color: var(--text-strong); }
+  .sign-cancel:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+
+  .sign-btn {
+    appearance: none;
+    flex: 1;
+    padding: 9px 18px;
+    cursor: pointer;
+    border: 1px solid var(--tab-active-border, rgba(255, 255, 255, 0.14));
+    border-radius: 0;
+    background: var(--tab-active-bg, #2e2e2e);
+    color: var(--tab-active-text, #fefefe);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+  }
+  .sign-btn:hover { border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32)); }
+  .sign-btn:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+  .sign-btn:disabled { opacity: 0.55; cursor: default; }
+
+  .sign-note {
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  /* ----- Guestbook: passport-stamp cards -----
+     Date at the top, message in the middle, name + country pinned to the
+     bottom. Corner brackets and postmark are pure CSS, no images. */
+  .guests {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    /* Fixed 4 per row across the full width of the music card, so stamp 5
+       starts a fresh row rather than the count drifting with the viewport.
+       minmax(0, 1fr) — a bare 1fr has min-width auto and a long country name
+       would push the row past the container. */
+    grid-template-columns: repeat(var(--guest-cols, 4), minmax(0, 1fr));
+    gap: clamp(14px, 1.8vw, 22px);
+    max-width: none;
+  }
+
+  .guest {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    /* Portrait, like a real stamp. height stays auto so a long message can
+       push past the ratio rather than overflowing it. */
+    aspect-ratio: 4 / 5;
+    min-height: 320px;
+    padding: 28px 22px 22px;
+    text-align: center;
+    background: var(--mw-shell, #2e2e2e);
+    border: 1px solid var(--tab-active-border, rgba(255, 255, 255, 0.14));
+    border-radius: 0;
+    transition: border-color 0.2s ease;
+  }
+  .guest:hover {
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+  }
+
+  /* Inner dashed frame, the way a stamp is perforated inside its edge. */
+  .guest::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    pointer-events: none;
+  }
+
+  .corner {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border: 0 solid var(--tab-more, rgba(242, 242, 242, 0.6));
+    pointer-events: none;
+  }
+  .corner.tl { top: 13px; left: 13px; border-top-width: 1px; border-left-width: 1px; }
+  .corner.tr { top: 13px; right: 13px; border-top-width: 1px; border-right-width: 1px; }
+  .corner.bl { bottom: 13px; left: 13px; border-bottom-width: 1px; border-left-width: 1px; }
+  .corner.br { bottom: 13px; right: 13px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .postmark {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: grid;
+    place-content: center;
+    width: 52px;
+    height: 52px;
+    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    border-radius: 50%; /* the one round thing — it's a rubber stamp */
+    transform: rotate(-11deg);
+    font-size: 0.5rem;
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
+  .guest-date {
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .guest-msg {
+    /* Centred in the space between the date and the footer. */
+    margin: 0;
+    padding: 18px 4px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .guest-foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .guest-name {
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    color: var(--text-strong);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+    overflow-wrap: anywhere;
+  }
+  a.guest-name {
+    transition: text-decoration-color 0.2s ease;
+  }
+  a.guest-name:hover {
+    text-decoration-color: var(--link-underline-hover);
+  }
+  a.guest-name:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  .guest-from {
+    margin-top: 8px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .guest-country {
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+  }
+
+  /* ----- Bookshelf: cover grid ----- */
+  .shelf {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    /* Fixed 8 per row, so book 9 starts a fresh row of 8 rather than the count
+       shifting with the viewport. minmax(0, 1fr) — a bare 1fr has min-width
+       auto and would let a wide cover push the row past the container. */
+    grid-template-columns: repeat(var(--shelf-cols, 8), minmax(0, 1fr));
+    gap: clamp(14px, 1.8vw, 24px);
+    max-width: none;
+  }
+
+  .book {
+    min-width: 0;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+  .book:hover { transform: translateY(-4px); }
+
+  .book-frame {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--tab-frame, #2e2e2e);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  }
+
+  .book-cover {
+    /* The well keeps a uniform 2:3 so the grid stays even regardless of what
+       shape the individual cover is. */
+    aspect-ratio: 2 / 3;
+    background: var(--mw-panel, #202020);
+  }
+  .book-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* contain, not cover: the covers aren't all exactly 2:3, and cropping
+       slices the titles off the edges. */
+    object-fit: contain;
+    border-radius: 0;
+  }
+
+  /* Revealed on hover, or on keyboard focus so it isn't mouse-only. Opacity
+     rather than display, so the grid reserves the space and nothing shifts. */
+  .book-meta {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .book:hover .book-meta,
+  .book:focus-within .book-meta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .book-title {
+    margin: 0;
+    text-align: center;
+    font-size: clamp(0.82rem, 0.95vw, 0.9rem);
+    line-height: 1.35;
+    color: var(--text-strong);
+  }
+  .book-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .book-title a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .book-author {
+    margin: 2px 0 0;
+    text-align: center;
+    font-size: clamp(0.75rem, 0.88vw, 0.82rem);
+    line-height: 1.35;
+    color: var(--text-muted);
+  }
+
+  .book-status {
+    margin: 4px 0 0;
+    text-align: center;
+    font-style: italic;
+    font-size: clamp(0.7rem, 0.82vw, 0.78rem);
+    color: var(--text-muted);
+  }
+
+  .empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: clamp(0.9rem, 1vw, 1rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel { animation: none; }
+    .card, .card-out, .card-blurb, .guest, .book, .book-meta,
+    .ring-nav, .ring-arrow { transition: none; }
+    .book:hover { transform: none; }
+    .book-meta { transform: none; }
+    .card-out:hover { transform: none; }
+  }
+
+  /* Touch devices never hover, so a hover-only title would be unreachable.
+     Show it permanently there instead. */
+  @media (hover: none) {
+    .book-meta { opacity: 1; transform: none; }
+  }
+
+  /* 8 covers only works while there's width for it — step the count down
+     rather than letting them shrink to thumbnails. */
+  @media (max-width: 1100px) {
+    .shelf { --shelf-cols: 6; }
+    .guests { --guest-cols: 3; }
+  }
+
+  /* 860, not 760: at 768px (iPad portrait, and a very common width) the old
+     breakpoint left the shelf on 6 columns, which works out to a 79px cover,
+     and the guestbook on 3, at 220px a stamp. Both are too tight. */
+  @media (max-width: 860px) {
+    .shelf { --shelf-cols: 4; }
+    .guests { --guest-cols: 2; }
+  }
+
+  /* Below ~760px the two-up card would squeeze the blurb — stack it. */
+  @media (max-width: 760px) {
+    .card { grid-template-columns: minmax(0, 1fr); }
+    .card-body {
+      padding: 0 clamp(4px, 1vw, 8px) clamp(4px, 1vw, 6px);
+    }
+    .card-blurb { -webkit-line-clamp: 4; line-clamp: 4; }
+  }
+
+  @media (max-width: 480px) {
+    .tab { padding: 8px 14px; font-size: 0.875rem; }
+    .ring-nav { grid-template-columns: 46px minmax(0, 1fr) 46px; }
+    .ring-body { padding: 15px 10px; }
+    .shelf { --shelf-cols: 3; gap: 12px; }
+
+    /* One stamp per row on phones. The 4:5 ratio has to go here, or a
+       full-width card ends up ~600px tall. */
+    .guests { --guest-cols: 1; }
+    .guest {
+      /* Ratio off, floor on: a full-width card at 4:5 would be ~600px tall,
+         but without a floor it collapses to the squat rectangle. This lands
+         roughly square on a phone. */
+      aspect-ratio: auto;
+      min-height: 340px;
+      padding: 24px 20px 20px;
+    }
+    .guest-msg { padding: 16px 2px; }
+    .postmark { width: 44px; height: 44px; top: 16px; right: 16px; }
+    .guest.guest-add { min-height: 240px; }
+  }
+
+  /* At 320px, 3 columns leaves a 48px cover — unreadable. */
+  @media (max-width: 360px) {
+    .shelf { --shelf-cols: 2; }
+  }
+</style>

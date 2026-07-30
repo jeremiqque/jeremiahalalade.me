@@ -174,7 +174,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
     width: 3px;
     height: 100%;
     border-radius: 2px;
-    background: #f0500c;
+    background: var(--accent-mark, #db5b46);
     transform: scaleY(0.28);
     transform-origin: center;
     animation-name: mw-eq;
@@ -217,7 +217,7 @@ const BARS = Array.from({ length: 22 }, (_, i) => ({
   /* ----- Playing state ----- */
   .music.is-playing .mw-viz { display: flex; }
   .music.is-playing .mw-vinyl {
-    color: #f0500c;
+    color: var(--accent-mark, #db5b46);
     animation: mw-spin 3.2s linear infinite;
   }
   @keyframes mw-spin {

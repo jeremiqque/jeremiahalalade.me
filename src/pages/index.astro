@@ -3,6 +3,7 @@
 // Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
 import MusicWidget from '../components/MusicWidget.astro';
 import Dock from '../components/Dock.astro';
+import Tabs from '../components/Tabs.astro';
 const email = 'hey@jeremiahalalade.me';
 const year = new Date().getFullYear();
 ---
@@ -44,10 +45,9 @@ const year = new Date().getFullYear();
 
           <div class="name-row">
             <h1 class="name">Jeremiah Alalade</h1>
-            <img class="hand" src="assets/hand.svg" alt="" aria-hidden="true" width="78" height="100" />
           </div>
           <div class="bio">
-            <p>I design and engineer at <a class="bio-link" href="https://axiomblack.com" target="_blank" rel="noopener noreferrer">Axiom Black</a></p>
+            <p>I design and engineer at <a class="bio-link" href="https://axiomblack.com" target="_blank" rel="noopener noreferrer">Axiom Black</a>. Previously, I held various roles at <a class="bio-link" href="https://www.linkedin.com/in/jeremiqque/" target="_blank" rel="noopener noreferrer">startups</a>.</p>
             <p>I consider Nigeria as current home</p>
             <p>I highlight curiosity as a personal quality</p>
           </div>
@@ -64,6 +64,8 @@ const year = new Date().getFullYear();
       <div class="music-slot">
         <MusicWidget />
       </div>
+
+      <Tabs />
 
       <a class="email" href={`mailto:${email}`}>
         <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -160,7 +162,39 @@ const year = new Date().getFullYear();
     --toggle-bg-hover: rgba(255, 255, 255, 0.12);
 
     --text-muted: rgba(242, 242, 242, 0.55);
-    --lv-accent: #7cb0ff;
+    /* Same hue as the link accent, one step higher so it keeps the visual
+       weight the blue had (8.44:1 on the card). */
+    --lv-accent: #f3a89a;
+
+    --tab-border: rgba(255, 255, 255, 0.18);
+    --tab-border-hover: rgba(255, 255, 255, 0.32);
+    --tab-text: rgba(242, 242, 242, 0.6);
+    --tab-text-hover: #f2f2f2;
+    --tab-active-bg: #2e2e2e;
+    --tab-active-border: rgba(255, 255, 255, 0.14);
+    --tab-active-text: #fefefe;
+    --tab-more: rgba(242, 242, 242, 0.6);
+
+    /* Selected tab: solid accent fill. Separate tokens from --tab-active-*,
+       which the cards, stamps and ring rows use for their borders. */
+    --tab-on-bg: #cb4834;
+    --tab-on-text: #ffffff;
+
+    /* Graphic marks on a dark surface — equalizer bars, the spinning vinyl.
+       Lighter than --tab-on-bg on purpose: that one has to hold white text at
+       4.5:1, this one has to clear 3:1 against #2e2e2e and #202020. One value
+       can't do both, so they're two steps of the same hue. */
+    --accent-mark: #db5b46;
+    --tab-frame: #2e2e2e;
+    --ring-accent: var(--accent-mark); /* hovered webring arrow */
+
+    /* Inline link accent, on the hue of #330a05 = oklch(0.218 0.067 31.2).
+       The hex itself reads 1.09:1 on the card, so it can't carry text; this is
+       the same hue lifted to oklch(0.65 0.105 31.2) for 4.82:1, which clears
+       AA for body copy. */
+    --link-accent: #c77667;
+    --link-accent-hover: #f3a89a;
+    --link-accent-underline: rgba(199, 118, 103, 0.5);
 
     --dock-bg: rgba(46, 46, 46, 0.98); /* matches the site's #2e2e2e surface */
     --dock-border: rgba(255, 255, 255, 0.1);
@@ -206,7 +240,31 @@ const year = new Date().getFullYear();
     --toggle-bg-hover: rgba(0, 0, 0, 0.1);
 
     --text-muted: rgba(31, 31, 31, 0.55);
-    --lv-accent: #2563eb;
+    --lv-accent: #925b51;
+
+    --tab-border: rgba(0, 0, 0, 0.2);
+    --tab-border-hover: rgba(0, 0, 0, 0.38);
+    --tab-text: rgba(31, 31, 31, 0.6);
+    --tab-text-hover: #1f1f1f;
+    --tab-active-bg: #e5e5e5;
+    --tab-active-border: rgba(0, 0, 0, 0.12);
+    --tab-active-text: #0d0d0d;
+    --tab-more: rgba(28, 28, 28, 0.7);
+
+    --tab-on-bg: #cb4834;
+    --tab-on-text: #ffffff;
+
+    /* Marks go darker here so they read against the pale card. */
+    --accent-mark: #a8402c;
+
+    --tab-frame: #d9d9d9;
+    --ring-accent: var(--accent-mark);
+
+    /* Same hue, dropped down the ramp instead of up so it reads on paper:
+       oklch(0.53 0.075 31.2) is 4.93:1 on #f3f3f3. */
+    --link-accent: #925b51;
+    --link-accent-hover: #5f3e37;
+    --link-accent-underline: rgba(146, 91, 81, 0.5);
 
     --dock-bg: rgba(255, 255, 255, 0.98);
     --dock-border: rgba(0, 0, 0, 0.12);
@@ -285,37 +343,6 @@ const year = new Date().getFullYear();
     color: var(--text-strong);
   }
 
-  .hand {
-    flex: none;
-    height: clamp(54px, 5vw, 74px);
-    width: auto;
-    cursor: pointer;
-    transform-origin: 50% 90%; /* rotate from the wrist */
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: transform;
-  }
-
-  .hand:hover {
-    animation: hand-wave 0.8s ease-in-out infinite;
-  }
-
-  .hand:active {
-    animation: none;
-    transform: scale(1.18) rotate(-8deg);
-  }
-
-  @keyframes hand-wave {
-    0%, 100% { transform: rotate(0deg); }
-    20% { transform: rotate(14deg); }
-    45% { transform: rotate(-10deg); }
-    70% { transform: rotate(8deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hand:hover { animation: none; transform: scale(1.06); }
-    .hand:active { transform: scale(1.06); }
-  }
-
   .bio {
     margin: 16px 0 0;
     display: flex;
@@ -331,13 +358,20 @@ const year = new Date().getFullYear();
   }
 
   .bio-link {
-    color: inherit;
+    color: var(--link-accent);
     text-decoration: underline;
     text-underline-offset: 2px;
-    text-decoration-color: var(--link-underline);
-    transition: text-decoration-color 0.2s ease;
+    text-decoration-color: var(--link-accent-underline);
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
   }
-  .bio-link:hover { text-decoration-color: var(--link-underline-hover); }
+  .bio-link:hover {
+    color: var(--link-accent-hover);
+    text-decoration-color: currentColor;
+  }
+  .bio-link:focus-visible {
+    outline: 2px solid var(--link-accent);
+    outline-offset: 2px;
+  }
 
   /* ----- Email (bottom-right of the card) ----- */
   .email {
@@ -478,6 +512,9 @@ const year = new Date().getFullYear();
   @media (max-width: 1024px) {
     .email { bottom: 100px; right: 16px; }
     .footer { bottom: 100px; left: 16px; }
+    /* Those two are absolutely positioned, so the card has to reserve room for
+       them or flow content runs underneath. Must clear 100px + line height. */
+    .card { padding-bottom: 136px; }
   }
 
   @media (max-width: 720px) {
@@ -493,10 +530,10 @@ const year = new Date().getFullYear();
   /* On phones the corners would overlap each other — stack them, centered,
      above the dock. */
   @media (max-width: 480px) {
-    /* keep the name + wave on one line */
     .name { font-size: 1.7rem; }
-    .name-row { gap: 14px; align-items: center; }
-    .hand { height: 42px; }
+
+    /* Stacked footer sits highest here (134px + its line), so reserve more. */
+    .card { padding-bottom: 176px; }
 
     .footer {
       left: 0;
@@ -515,6 +552,5 @@ const year = new Date().getFullYear();
 
   @media (max-width: 360px) {
     .name { font-size: 1.45rem; }
-    .hand { height: 38px; }
   }
 </style>
