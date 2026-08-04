@@ -63,6 +63,10 @@ type Tab =
 const THUMB = '/assets/thumb-placeholder.svg';
 const COVER = '/assets/cover-placeholder.svg';
 
+// Lives in public/, so the path is served as-is. Swap the file to update the
+// resume — no code change needed.
+const RESUME_URL = '/Jeremiah-Alalade-Resume.pdf';
+
 // The name registered with each webring. Typed once: Bucket's docs note that a
 // mismatched name silently routes you to the wrong neighbours rather than
 // erroring, so this is a bad thing to duplicate.
@@ -319,23 +323,43 @@ const fmtDate = (iso: string) => {
 ---
 
 <section class="tabs" data-tabs aria-label="More about me">
-  <div class="tablist" role="tablist" aria-label="Sections">
-    {
-      tabs.map((tab, i) => (
-        <button
-          class="tab"
-          type="button"
-          role="tab"
-          id={`tab-${tab.id}`}
-          data-tab={tab.id}
-          aria-controls={`panel-${tab.id}`}
-          aria-selected={i === 0 ? 'true' : 'false'}
-          tabindex={i === 0 ? 0 : -1}
-        >
-          {tab.label}
-        </button>
-      ))
-    }
+  <div class="tab-row">
+    <div class="tablist" role="tablist" aria-label="Sections">
+      {
+        tabs.map((tab, i) => (
+          <button
+            class="tab"
+            type="button"
+            role="tab"
+            id={`tab-${tab.id}`}
+            data-tab={tab.id}
+            aria-controls={`panel-${tab.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            {tab.label}
+          </button>
+        ))
+      }
+    </div>
+
+    {/* Not a tab: it opens the PDF instead of revealing a panel, so it sits
+        outside the tablist (a plain link inside role="tablist" is invalid ARIA)
+        but reuses .tab so the row still reads as one set. */}
+    <a
+      class="tab resume"
+      href={RESUME_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Resume (PDF, opens in a new tab)"
+    >
+      <span>Resume</span>
+      <svg class="resume-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3.75v10.5" />
+        <path d="m7.75 10.5 4.25 4.25 4.25-4.25" />
+        <path d="M4.75 19.5h14.5" />
+      </svg>
+    </a>
   </div>
 
   {
@@ -963,10 +987,22 @@ const fmtDate = (iso: string) => {
   }
 
   /* ----- Tab row ----- */
-  .tablist {
+  /* Wrapper so the resume link can sit in the same visual row as the tabs
+     without being a child of role="tablist". */
+  .tab-row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
+  }
+
+  /* display: contents so the five tabs become direct flex children of
+     .tab-row. As its own flex item the tablist wrapped as one block, which
+     pushed Resume onto a line of its own; this way all six items flow in a
+     single wrapping row. The role="tablist" is preserved — modern engines keep
+     the ARIA role under display: contents. */
+  .tablist {
+    display: contents;
   }
 
   .tab {
@@ -1004,6 +1040,27 @@ const fmtDate = (iso: string) => {
   .tab[aria-selected='true']:hover {
     border-color: var(--tab-on-bg, #cb4834);
     color: var(--tab-on-text, #ffffff);
+  }
+
+  /* ----- Resume link (styled as a tab, behaves as a link) ----- */
+  .resume {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    /* The tabs are buttons with line-height 1 and no descender box; the link
+       needs the same optical height, so trim the vertical padding by the 1px
+       the inline-flex box adds. */
+    padding: 8px 16px 8px 18px;
+  }
+  .resume-icon {
+    flex: none;
+    transition: transform 0.2s ease;
+  }
+  .resume:hover .resume-icon { transform: translateY(2px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .resume:hover .resume-icon { transform: none; }
   }
 
   /* ----- Panels ----- */
@@ -1799,6 +1856,7 @@ const fmtDate = (iso: string) => {
 
   @media (max-width: 480px) {
     .tab { padding: 8px 14px; font-size: 0.875rem; }
+    .resume { padding: 7px 12px 7px 14px; gap: 6px; }
     .ring-nav { grid-template-columns: 46px minmax(0, 1fr) 46px; }
     .ring-body { padding: 15px 10px; }
     .shelf { --shelf-cols: 3; gap: 12px; }
