@@ -527,30 +527,66 @@ const year = new Date().getFullYear();
     .last-visitor { text-align: left; }
   }
 
-  /* On phones the corners would overlap each other — stack them, centered,
-     above the dock. */
   @media (max-width: 480px) {
     .name { font-size: 1.7rem; }
-
-    /* Stacked footer sits highest here (134px + its line), so reserve more. */
-    .card { padding-bottom: 176px; }
-
-    .footer {
-      left: 0;
-      right: 0;
-      text-align: center;
-      bottom: 134px;
-    }
-    .email {
-      left: 0;
-      right: 0;
-      justify-content: center;
-      max-width: none;
-      bottom: 106px;
-    }
   }
 
   @media (max-width: 360px) {
     .name { font-size: 1.45rem; }
+  }
+
+  /* ----- Phones: email + footer rejoin the normal flow -----
+     Above this width both are pinned to the card's bottom corners, which only
+     holds while the viewport is wide enough to keep them apart. Below it they
+     were stacked at bottom: 134px / 106px — 28px apart, which is less than the
+     email's line box once the address no longer fits on one line, so the two
+     collided with each other and with the dock. Absolute offsets can't fix
+     that: they'd have to know the rendered text height. Flowing them at the end
+     of the card does, and the card then reserves room for the dock instead of
+     for two hardcoded offsets.
+     Placed last in the sheet so it wins over the 1024px block, which also
+     matches at these widths. */
+  @media (max-width: 560px) {
+    .email,
+    .footer {
+      position: static;
+      inset: auto;
+      max-width: 100%;
+      text-align: center;
+      /* Both are nowrap in the corner layout. In flow a long address has to be
+         allowed to break instead of running off the card. */
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .email {
+      display: flex;
+      justify-content: center;
+      /* The card is a flex column, so auto here pushes the email + footer pair
+         to the bottom of the card no matter how short the content is. Without
+         it a short page leaves them mid-card, where the fixed dock covers them.
+         The gap has to be padding, not margin — margin-top: auto eats it. */
+      margin: auto auto 0;
+      padding-top: clamp(24px, 7vw, 36px);
+      opacity: 1;
+    }
+    /* The corner version clipped with an ellipsis; wrapping replaces that. A
+       long address is one unbroken word, so it needs an explicit break rule and
+       min-width: 0 to stop the flex item from forcing its own min-content. */
+    .email span {
+      min-width: 0;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .footer { margin: 10px auto 0; }
+
+    /* Clears the fixed dock, which the card can't measure: 28px bottom offset
+       + ~52px pill + a 30px gap, less the 12px frame the card already sits
+       inside. Erring generous — too little here is an overlap, too much is
+       whitespace. */
+    .card { padding-bottom: calc(102px + env(safe-area-inset-bottom, 0px)); }
   }
 </style>
