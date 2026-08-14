@@ -45,6 +45,10 @@ const year = new Date().getFullYear();
 
           <div class="name-row">
             <h1 class="name">Jeremiah Alalade</h1>
+            <span class="status" role="status">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span class="status-text">Available for work</span>
+            </span>
           </div>
           <div class="bio">
             <p>I design and engineer at <a class="bio-link" href="https://axiomblack.com" target="_blank" rel="noopener noreferrer">Axiom Black</a>. Previously, I held various roles at <a class="bio-link" href="https://www.linkedin.com/in/jeremiqque/" target="_blank" rel="noopener noreferrer">startups</a>.</p>
@@ -162,6 +166,14 @@ const year = new Date().getFullYear();
     --toggle-bg-hover: rgba(255, 255, 255, 0.12);
 
     --text-muted: rgba(242, 242, 242, 0.55);
+
+    /* "Available for work" badge */
+    --status-bg: rgba(255, 255, 255, 0.05);
+    --status-border: rgba(255, 255, 255, 0.14);
+    --status-text: rgba(242, 242, 242, 0.72);
+    --status-dot: #3ddc84;
+    --status-glow: rgba(61, 220, 132, 0.55);
+
     /* Same hue as the link accent, one step higher so it keeps the visual
        weight the blue had (8.44:1 on the card). */
     --lv-accent: #f3a89a;
@@ -240,6 +252,14 @@ const year = new Date().getFullYear();
     --toggle-bg-hover: rgba(0, 0, 0, 0.1);
 
     --text-muted: rgba(31, 31, 31, 0.55);
+
+    --status-bg: rgba(0, 0, 0, 0.04);
+    --status-border: rgba(0, 0, 0, 0.12);
+    --status-text: rgba(31, 31, 31, 0.7);
+    /* Darker green so the dot still reads on the pale card. */
+    --status-dot: #15a34a;
+    --status-glow: rgba(21, 163, 74, 0.45);
+
     --lv-accent: #925b51;
 
     --tab-border: rgba(0, 0, 0, 0.2);
@@ -330,7 +350,8 @@ const year = new Date().getFullYear();
   .name-row {
     display: flex;
     align-items: center;
-    gap: 30px;
+    flex-wrap: wrap;
+    gap: 14px 18px;
   }
 
   .name {
@@ -341,6 +362,55 @@ const year = new Date().getFullYear();
     line-height: 1;
     letter-spacing: 0.01em;
     color: var(--text-strong);
+  }
+
+  /* ----- "Available for work" badge ----- */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px 5px 9px;
+    border-radius: 999px;
+    background: var(--status-bg);
+    border: 1px solid var(--status-border);
+    font-size: clamp(0.75rem, 0.9vw, 0.85rem);
+    line-height: 1;
+    color: var(--status-text);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .status-dot {
+    position: relative;
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status-dot);
+    animation: status-pulse 2s ease-in-out infinite;
+  }
+  /* Expanding ring, so the blink reads as "live" rather than a flicker. */
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--status-glow);
+    animation: status-ring 2s ease-out infinite;
+  }
+
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+  @keyframes status-ring {
+    0% { transform: scale(1); opacity: 0.7; }
+    70%, 100% { transform: scale(2.6); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .status-dot { animation: none; opacity: 1; }
+    .status-dot::after { animation: none; opacity: 0; }
   }
 
   .bio {
@@ -523,7 +593,7 @@ const year = new Date().getFullYear();
       align-items: flex-start;
       gap: clamp(20px, 5vw, 32px);
     }
-    .name-row { gap: 30px; }
+    .name-row { gap: 12px 16px; }
     .last-visitor { text-align: left; }
   }
 
