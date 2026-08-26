@@ -160,9 +160,6 @@ const year = new Date().getFullYear();
     --mw-artist: #c9c9c9;
     --mw-footer: #f2f2f2;
 
-    --pill-a: #1a1a1a;
-    --pill-b: #7e7e7e;
-
     --toggle-bg: rgba(255, 255, 255, 0.06);
     --toggle-border: rgba(255, 255, 255, 0.16);
     --toggle-bg-hover: rgba(255, 255, 255, 0.12);
@@ -220,10 +217,6 @@ const year = new Date().getFullYear();
     --dock-book-hover-bg: #ffffff;
     --dock-book-hover-text: #000000;
     --dock-divider: rgba(255, 255, 255, 0.1);
-    --dock-tile-fill-a: #202020;
-    --dock-tile-fill-b: #414141;
-    --dock-tile-edge-a: #373737;
-    --dock-tile-edge-b: #262626;
     /* orevba-style detailing: dark ring, soft float, top inner highlight +
        bottom inner shade */
     --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 10px 30px rgba(0, 0, 0, 0.38),
@@ -245,9 +238,6 @@ const year = new Date().getFullYear();
     --mw-title: #1f1f1f;
     --mw-artist: #5a5a5a;
     --mw-footer: #1f1f1f;
-
-    --pill-a: #9a9a9a;
-    --pill-b: #d4d4d4;
 
     --toggle-bg: rgba(0, 0, 0, 0.05);
     --toggle-border: rgba(0, 0, 0, 0.14);
@@ -298,10 +288,6 @@ const year = new Date().getFullYear();
     --dock-book-hover-bg: #111111;
     --dock-book-hover-text: #ffffff;
     --dock-divider: rgba(0, 0, 0, 0.1);
-    --dock-tile-fill-a: #ffffff;
-    --dock-tile-fill-b: #e6e6e6;
-    --dock-tile-edge-a: #d6d6d6;
-    --dock-tile-edge-b: #f4f4f4;
     --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.16),
       inset 0 1px 0 rgba(255, 255, 255, 0.9),
       inset 0 -1px 0 rgba(0, 0, 0, 0.06);
@@ -547,27 +533,6 @@ const year = new Date().getFullYear();
       transparent 8px 20px
     );
     margin: clamp(22px, 2.6vw, 34px) 0 0;
-  }
-
-  /* ----- "Don't touch me" pill ----- */
-  .pill {
-    align-self: flex-start;
-    margin: 32px 0 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: clamp(64px, 6.4vw, 84px);
-    padding: 0 clamp(32px, 3vw, 44px);
-    border-radius: 999px;
-    font-family: var(--font-body);
-    font-size: clamp(1rem, 1.2vw, 1.125rem);
-    color: #ffffff;
-    background: linear-gradient(90deg, var(--pill-a) 0%, var(--pill-b) 100%);
-    box-shadow:
-      0 0 0 4px rgba(82, 82, 82, 0.6),
-      inset 0 1px 1px rgba(255, 255, 255, 0.6),
-      inset 0 -2px 1px rgba(0, 0, 0, 0.1);
-    user-select: none;
   }
 
   /* ----- Music widget slot ----- */
