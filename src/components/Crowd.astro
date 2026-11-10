@@ -121,9 +121,23 @@
     }
 
     window.addEventListener('resize', function () { resize(); if (reduced) draw(); });
-    img.onload = start;
-    img.src = '/assets/peeps/all-peeps.png';
-    if (img.complete && img.naturalWidth) start();
+    // The sprite sheet is large and sits at the very bottom of the page, so it
+    // only starts downloading once the footer is about to come into view.
+    var loading = false;
+    function load() {
+      if (loading) return;
+      loading = true;
+      img.onload = start;
+      img.src = '/assets/peeps/all-peeps.png';
+    }
+    if ('IntersectionObserver' in window) {
+      var near = new IntersectionObserver(function (en) {
+        if (en[0].isIntersecting) { near.disconnect(); load(); }
+      }, { rootMargin: '250px 0px' });
+      near.observe(cv);
+    } else {
+      load();
+    }
   })();
 </script>
 
