@@ -1,0 +1,20 @@
+---
+// One page per Markdown file in writing.
+import Article from '../../layouts/Article.astro';
+
+export function getStaticPaths() {
+  const modules = import.meta.glob('../../content/writing/*.md', { eager: true }) as Record<string, any>;
+  return Object.entries(modules)
+    .map(([path, post]) => ({ slug: path.split('/').pop()!.replace(/\.md$/, ''), post }))
+    .filter(({ slug, post }) => !slug.startsWith('_') && !post.frontmatter.draft)
+    .map(({ slug, post }) => ({ params: { slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = post;
+const { title, description, date, live } = post.frontmatter;
+---
+
+<Article title={title} description={description} date={String(date)} live={live}>
+  <Content />
+</Article>
