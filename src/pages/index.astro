@@ -1,9 +1,11 @@
 ---
 // Jeremiah Alalade — personal landing page
 // Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
+import Crowd from '../components/Crowd.astro';
+import ScrollBlur from '../components/ScrollBlur.astro';
 import MusicWidget from '../components/MusicWidget.astro';
-import Dock from '../components/Dock.astro';
 import Tabs from '../components/Tabs.astro';
+import SoundToggle from '../components/SoundToggle.astro';
 const email = 'hey@jeremiahalalade.me';
 const year = new Date().getFullYear();
 ---
@@ -16,6 +18,12 @@ const year = new Date().getFullYear();
     <meta name="description" content="Jeremiah Alalade — Product designer engineer." />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23181818'/><rect x='3' y='3' width='26' height='26' rx='3' fill='%23202020'/></svg>" />
     <title>Jeremiah Alalade</title>
+    <meta name="theme-color" content="#f2f2f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#181818" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Jeremiah Alalade" />
+    <meta property="og:description" content="Jeremiah Alalade — Product designer engineer." />
+    <meta name="twitter:card" content="summary" />
     <script is:inline>
       // Set theme before paint to avoid a flash of the wrong colors.
       (function () {
@@ -42,20 +50,19 @@ const year = new Date().getFullYear();
               <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
             </svg>
           </button>
+          <SoundToggle />
 
           <div class="name-row">
             <h1 class="name">Jeremiah Alalade</h1>
-            <span class="status" role="status">
-              <span class="status-dot" aria-hidden="true"></span>
-              <span class="status-text">Available for work</span>
-            </span>
+
           </div>
+          <p class="role">Design Engineer</p>
           <div class="bio">
-            <p>I design and engineer softwares.</p>
-            <p>Previously, I held various roles at <a class="bio-link" href="https://www.linkedin.com/in/jeremiqque/" target="_blank" rel="noopener noreferrer">startups</a>.</p>
-            <p>I consider Nigeria as current home</p>
-            <p>I highlight curiosity as a personal quality.</p>
-            <p>I strongly believe that you can do great things from a small place.</p>
+            <p>I'm a design engineer based in Nigeria.</p>
+            <p>I currently work at <span class="peek"><img class="ico" src="/assets/logos/campusupdate.png" alt="" width="16" height="16" /><a class="bio-link" href="https://campusupdate.divacatech.com/" target="_blank" rel="noopener noreferrer">CampusUpdate</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img src="/assets/previews/campusupdate.jpg" alt="" width="256" height="160" loading="lazy" decoding="async" /></span></span> as a design engineer, where I spend most of my time on the details most people never notice but always feel. I highlight curiosity as a personal quality.</p>
+            <p>Before CampusUpdate, I worked with <span class="peek"><img class="ico" src="/assets/logos/axiomblack.png" alt="" width="16" height="16" /><a class="bio-link" href="https://axiomblack.com/" target="_blank" rel="noopener noreferrer">axiomblack.com</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img src="/assets/previews/axiomblack.jpg" alt="" width="256" height="160" loading="lazy" decoding="async" /></span></span>, <span class="peek"><img class="ico" src="/assets/logos/hydratech.png" alt="" width="16" height="16" /><a class="bio-link" href="https://hydratechinnovations.ng/" target="_blank" rel="noopener noreferrer">hydratechinnovations.ng</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img src="/assets/previews/hydratech.jpg" alt="" width="256" height="160" loading="lazy" decoding="async" /></span></span> and <span class="peek"><img class="ico" src="/assets/logos/springcitadel.png" alt="" width="16" height="16" /><a class="bio-link" href="https://www.springcitadelschool.com/" target="_blank" rel="noopener noreferrer">springcitadelintschool.com</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img src="/assets/previews/springcitadel.jpg" alt="" width="256" height="160" loading="lazy" decoding="async" /></span></span>.</p>
+            <p>Along the way, I freelanced on <a class="bio-link" href="https://www.upwork.com/freelancers/~015e96558bbb1bacc9" target="_blank" rel="noopener noreferrer">Upwork</a> and Fiverr.</p>
+            <p>You can find me on <span class="ref"><span class="ico " style="background:#111111" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg></span><a class="bio-link" href="https://x.com/jeremiqque" target="_blank" rel="noopener noreferrer">X (Twitter)</a></span>, <span class="ref"><span class="ico " style="background:#2b3137" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span><a class="bio-link" href="https://github.com/jeremiqque" target="_blank" rel="noopener noreferrer">GitHub</a></span>, <span class="ref"><span class="ico " style="background:#0a66c2" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span><a class="bio-link" href="https://www.linkedin.com/in/jeremiqque/" target="_blank" rel="noopener noreferrer">LinkedIn</a></span>, <span class="ref"><span class="ico " style="background:linear-gradient(45deg,#f9a03f,#e1306c 55%,#833ab4)" aria-hidden="true"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg></span><a class="bio-link" href="https://instagram.com/jere_miqque" target="_blank" rel="noopener noreferrer">Instagram</a></span>, <span class="ref"><span class="ico " style="background:#14a800" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M18.561 13.158c-1.102 0-2.135-.467-3.074-1.227l.228-1.076.008-.042c.207-1.143.849-3.06 2.839-3.06 1.492 0 2.703 1.212 2.703 2.703-.001 1.489-1.212 2.702-2.704 2.702zm0-8.14c-2.539 0-4.51 1.649-5.31 4.366-1.22-1.834-2.148-4.036-2.687-5.892H7.828v7.112c-.002 1.406-1.141 2.546-2.547 2.548-1.405-.002-2.543-1.143-2.545-2.548V3.492H0v7.112c0 2.914 2.37 5.303 5.281 5.303 2.913 0 5.283-2.389 5.283-5.303v-1.19c.529 1.107 1.182 2.229 1.974 3.221l-1.673 7.873h2.797l1.213-5.71c1.063.679 2.285 1.109 3.686 1.109 3 0 5.439-2.452 5.439-5.45 0-3-2.439-5.449-5.439-5.449z"/></svg></span><a class="bio-link" href="https://www.upwork.com/freelancers/~015e96558bbb1bacc9" target="_blank" rel="noopener noreferrer">Upwork</a></span> and <span class="ref"><span class="ico " style="background:#4a4a52" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M11.54 2.14a.75.75 0 0 1 .92 0l8.75 6.8a.75.75 0 0 1 0 1.19l-8.75 6.8a.75.75 0 0 1-.92 0l-8.75-6.8a.75.75 0 0 1 0-1.19l8.75-6.8Zm-8.13 10.9a.75.75 0 0 1 1.05-.13L12 18.8l7.54-5.89a.75.75 0 1 1 .92 1.18l-8 6.25a.75.75 0 0 1-.92 0l-8-6.25a.75.75 0 0 1-.13-1.05Z"/></svg></span><a class="bio-link" href="https://layers.to/jeremiqque" target="_blank" rel="noopener noreferrer">Layers</a></span>, or reach me by <a class="bio-link" href={`mailto:${email}`}>email</a>.</p>
           </div>
         </div>
 
@@ -73,18 +80,13 @@ const year = new Date().getFullYear();
 
       <Tabs />
 
-      <a class="email" href={`mailto:${email}`}>
-        <svg class="email-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-          <path d="M21.5 3.5 2.8 11.1c-.7.3-.7 1.2.0 1.5l5.3 1.9 1.9 5.6c.2.7 1.2.7 1.5.0l2.6-4.1 5.3 3.9c.4.3 1 .1 1.1-.4L22.4 4.2c.1-.5-.4-.9-.9-.7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
-          <path d="m9 14.5 10-9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-        </svg>
-        <span>{email}</span>
-      </a>
 
       <p class="footer">© {year} Jeremiah Alalade</p>
     </main>
 
-    <Dock />
+    <Crowd />
+    <ScrollBlur />
+
   </body>
 </html>
 
@@ -119,6 +121,39 @@ const year = new Date().getFullYear();
   })();
 </script>
 
+<script is:inline>
+  // Place each hover preview above the link under the pointer (or the first
+  // line of it when focused by keyboard). Needed because a link that wraps onto
+  // two lines has no single box to centre on.
+  (function () {
+    var peeks = document.querySelectorAll('.peek');
+    function place(peek, e) {
+      var link = peek.querySelector('a');
+      var card = peek.querySelector('.peek-card');
+      if (!link || !card) return;
+      var rects = link.getClientRects();
+      var r = rects[0];
+      if (e && typeof e.clientX === 'number') {
+        for (var i = 0; i < rects.length; i++) {
+          if (e.clientX >= rects[i].left && e.clientX <= rects[i].right &&
+              e.clientY >= rects[i].top && e.clientY <= rects[i].bottom) { r = rects[i]; break; }
+        }
+      }
+      var w = 256, h = card.offsetHeight || 180, gap = 10;
+      var left = Math.min(Math.max(r.left + r.width / 2 - w / 2, 8), window.innerWidth - w - 8);
+      var top = r.top - h - gap;
+      if (top < 8) top = r.bottom + gap;
+      card.style.left = left + 'px';
+      card.style.top = top + 'px';
+    }
+    peeks.forEach(function (peek) {
+      peek.addEventListener('mouseenter', function (e) { place(peek, e); });
+      peek.addEventListener('mousemove', function (e) { place(peek, e); });
+      peek.addEventListener('focusin', function () { place(peek, null); });
+    });
+  })();
+</script>
+
 <style>
   /* ----- Fonts (local OTF, exposed as CSS variables) ----- */
   @font-face {
@@ -139,14 +174,11 @@ const year = new Date().getFullYear();
   :root {
     --font-heading: 'Nimbu Demo', sans-serif;
     --font-body: 'PP Neue Corp Compact', sans-serif;
-
-    --frame: 12px;
   }
 
   /* ----- Theme palettes ----- */
   :root,
   :root[data-theme='dark'] {
-    --bg-frame: #181818;
     --bg-card: #202020;
     --text: #f2f2f2;
     --text-strong: #fefefe;
@@ -165,13 +197,7 @@ const year = new Date().getFullYear();
     --toggle-bg-hover: rgba(255, 255, 255, 0.12);
 
     --text-muted: rgba(242, 242, 242, 0.55);
-
-    /* "Available for work" badge */
-    --status-bg: rgba(255, 255, 255, 0.05);
-    --status-border: rgba(255, 255, 255, 0.14);
-    --status-text: rgba(242, 242, 242, 0.72);
-    --status-dot: #3ddc84;
-    --status-glow: rgba(61, 220, 132, 0.55);
+    --bg-page: #080808;
 
     /* Same hue as the link accent, one step higher so it keeps the visual
        weight the blue had (8.44:1 on the card). */
@@ -204,28 +230,9 @@ const year = new Date().getFullYear();
        the same hue lifted to oklch(0.65 0.105 31.2) for 4.82:1, which clears
        AA for body copy. */
     --link-accent: #c77667;
-    --link-accent-hover: #f3a89a;
-    --link-accent-underline: rgba(199, 118, 103, 0.5);
-
-    --dock-bg: rgba(46, 46, 46, 0.98); /* matches the site's #2e2e2e surface */
-    --dock-border: rgba(255, 255, 255, 0.1);
-    --dock-icon: rgba(255, 255, 255, 0.9);
-    --dock-icon-hover: #ffffff;
-    --dock-item-hover: rgba(255, 255, 255, 0.09);
-    --dock-book-border: rgba(255, 255, 255, 0.12);
-    --dock-book-text: #ffffff;
-    --dock-book-hover-bg: #ffffff;
-    --dock-book-hover-text: #000000;
-    --dock-divider: rgba(255, 255, 255, 0.1);
-    /* orevba-style detailing: dark ring, soft float, top inner highlight +
-       bottom inner shade */
-    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 10px 30px rgba(0, 0, 0, 0.38),
-      inset 0 1px 0 rgba(255, 255, 255, 0.09),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.28);
   }
 
   :root[data-theme='light'] {
-    --bg-frame: #dcdcdc;
     --bg-card: #f3f3f3;
     --text: #1f1f1f;
     --text-strong: #0d0d0d;
@@ -243,20 +250,15 @@ const year = new Date().getFullYear();
     --toggle-border: rgba(0, 0, 0, 0.14);
     --toggle-bg-hover: rgba(0, 0, 0, 0.1);
 
-    --text-muted: rgba(31, 31, 31, 0.55);
-
-    --status-bg: rgba(0, 0, 0, 0.04);
-    --status-border: rgba(0, 0, 0, 0.12);
-    --status-text: rgba(31, 31, 31, 0.7);
-    /* Darker green so the dot still reads on the pale card. */
-    --status-dot: #15a34a;
-    --status-glow: rgba(21, 163, 74, 0.45);
+    /* Raised from 0.55 so muted text clears 4.5:1 on the page and on cards. */
+    --text-muted: rgba(31, 31, 31, 0.7);
+    --bg-page: #f3f3f3;
 
     --lv-accent: #925b51;
 
     --tab-border: rgba(0, 0, 0, 0.2);
     --tab-border-hover: rgba(0, 0, 0, 0.38);
-    --tab-text: rgba(31, 31, 31, 0.6);
+    --tab-text: rgba(31, 31, 31, 0.72);
     --tab-text-hover: #1f1f1f;
     --tab-active-bg: #e5e5e5;
     --tab-active-border: rgba(0, 0, 0, 0.12);
@@ -275,25 +277,9 @@ const year = new Date().getFullYear();
     /* Same hue, dropped down the ramp instead of up so it reads on paper:
        oklch(0.53 0.075 31.2) is 4.93:1 on #f3f3f3. */
     --link-accent: #925b51;
-    --link-accent-hover: #5f3e37;
-    --link-accent-underline: rgba(146, 91, 81, 0.5);
-
-    --dock-bg: rgba(255, 255, 255, 0.98);
-    --dock-border: rgba(0, 0, 0, 0.12);
-    --dock-icon: rgba(0, 0, 0, 0.72);
-    --dock-icon-hover: #000000;
-    --dock-item-hover: rgba(0, 0, 0, 0.06);
-    --dock-book-border: rgba(0, 0, 0, 0.16);
-    --dock-book-text: #111111;
-    --dock-book-hover-bg: #111111;
-    --dock-book-hover-text: #ffffff;
-    --dock-divider: rgba(0, 0, 0, 0.1);
-    --dock-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.16),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.06);
   }
 
-  /* ----- Reset ----- */
+  /* ----- Reset + page ----- */
   *,
   *::before,
   *::after { box-sizing: border-box; }
@@ -302,8 +288,7 @@ const year = new Date().getFullYear();
 
   body {
     margin: 0;
-    padding: var(--frame);
-    background: var(--bg-frame);
+    background: var(--bg-page);
     color: var(--text);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
@@ -311,171 +296,168 @@ const year = new Date().getFullYear();
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* ----- Card (the #202020 panel inside the 12px frame) ----- */
+  /* One narrow column in the middle of the page, text left-aligned inside it
+     (reference: raphaelsalaja.com). 688px = a 640px column + 24px gutters. */
   .card {
-    min-height: calc(100vh - (var(--frame) * 2));
-    min-height: calc(100dvh - (var(--frame) * 2));
     position: relative;
-    background: var(--bg-card);
     display: flex;
     flex-direction: column;
-    padding: clamp(32px, 3.4vw, 52px) clamp(28px, 2.6vw, 40px);
-    /* extra bottom room so content never hides behind the fixed dock */
-    padding-bottom: clamp(96px, 10vw, 120px);
-    transition: background-color 0.3s ease;
+    align-items: stretch;
+    gap: 48px;
+    width: 100%;
+    max-width: 688px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 64px 24px 16px;
+    text-align: left;
   }
 
-  /* ----- Top region: intro + email ----- */
+  /* ----- Header: small name, muted role underneath ----- */
   .top {
+    position: relative;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: flex-start;
-    gap: 32px;
+    gap: 16px;
   }
-
   .intro { min-width: 0; }
 
   .name-row {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
-    gap: 14px 18px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px 14px;
   }
-
   .name {
     margin: 0;
-    font-family: var(--font-heading);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
     font-weight: 500;
-    font-size: clamp(2rem, 3.2vw, 2.6rem);
-    line-height: 1;
-    letter-spacing: 0.01em;
+    line-height: 1.3;
     color: var(--text-strong);
   }
-
-  /* ----- "Available for work" badge ----- */
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 11px 5px 9px;
-    border-radius: 999px;
-    background: var(--status-bg);
-    border: 1px solid var(--status-border);
-    font-size: clamp(0.75rem, 0.9vw, 0.85rem);
-    line-height: 1;
-    color: var(--status-text);
-    white-space: nowrap;
-    user-select: none;
+  .role {
+    margin: 6px 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    color: var(--text-muted);
   }
 
-  .status-dot {
-    position: relative;
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--status-dot);
-    animation: status-pulse 2s ease-in-out infinite;
-  }
-  /* Expanding ring, so the blink reads as "live" rather than a flicker. */
-  .status-dot::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: var(--status-glow);
-    animation: status-ring 2s ease-out infinite;
-  }
-
-  @keyframes status-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.45; }
-  }
-  @keyframes status-ring {
-    0% { transform: scale(1); opacity: 0.7; }
-    70%, 100% { transform: scale(2.6); opacity: 0; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .status-dot { animation: none; opacity: 1; }
-    .status-dot::after { animation: none; opacity: 0; }
-  }
-
+  /* ----- Bio ----- */
   .bio {
-    margin: 16px 0 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 28px 0 0;
   }
-
   .bio p {
     margin: 0;
-    font-size: clamp(0.95rem, 1.15vw, 1.0625rem);
-    line-height: 1.4;
+    font-size: 1.0625rem;
+    line-height: 1.6;
     color: var(--text);
   }
 
-  .bio-link {
-    color: var(--link-accent);
+  .bio .bio-link {
+    color: var(--text-strong);
     text-decoration: underline;
-    text-underline-offset: 2px;
-    text-decoration-color: var(--link-accent-underline);
-    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--link-underline);
+    transition: text-decoration-color 0.2s ease;
   }
-  .bio-link:hover {
-    color: var(--link-accent-hover);
-    text-decoration-color: currentColor;
-  }
-  .bio-link:focus-visible {
+  .bio .bio-link:hover { text-decoration-color: var(--link-underline-hover); }
+  .bio .bio-link:focus-visible {
     outline: 2px solid var(--link-accent);
     outline-offset: 2px;
   }
 
-  /* ----- Email (bottom-right of the card) ----- */
-  .email {
-    position: absolute;
-    right: clamp(28px, 2.6vw, 40px);
-    bottom: clamp(28px, 3vw, 40px);
-    z-index: 5;
+  .ref, .peek { white-space: nowrap; }
+
+  /* Small icon tile in front of each link. */
+  .ico {
+    position: relative;
+    top: -1px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    max-width: calc(100% - clamp(56px, 5.2vw, 80px));
-    color: var(--text);
-    text-decoration: none;
-    font-size: clamp(0.95rem, 1.1vw, 1.0625rem);
-    white-space: nowrap;
-    opacity: 0.85;
-    transition: opacity 0.2s ease;
-  }
-  .email:hover { opacity: 1; }
-
-  .email-icon { flex: none; }
-  .email span {
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    /* "middle" centres the tile on the text's x-height, so icon and words
+       share one visual line. */
+    vertical-align: middle;
+    border-radius: 4px;
+    object-fit: cover;
+    color: #fff;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
+  .ico svg { width: 10px; height: 10px; }
+  /* The Axiom Black mark is dark on transparent, so give it a light tile. */
+  .ico[src*='axiomblack'] { background: #fff; padding: 1px; box-sizing: border-box; }
 
-  /* ----- Footer (bottom-left of the card) ----- */
-  .footer {
-    position: absolute;
-    left: clamp(28px, 2.6vw, 40px);
-    bottom: clamp(28px, 3vw, 40px);
-    z-index: 5;
-    margin: 0;
-    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
-    color: var(--text-muted);
-    white-space: nowrap;
+  /* ----- Hover preview on company links (reference: raphaelsalaja.com) ----- */
+  .peek { position: relative; display: inline; }
+  .peek-card {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 20;
+    display: block;
+    width: 256px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--bg-card);
+    box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.28), 0 1px 2px rgba(0, 0, 0, 0.12),
+      0 12px 32px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px) scale(0.96);
+    transform-origin: 50% 100%;
+    transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
+  .peek:hover .peek-card,
+  .peek:focus-within .peek-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .peek-bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 8px;
+    background: #1c1c1c;
+  }
+  .peek-bar i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff5f57;
+  }
+  .peek-bar i:nth-child(2) { background: #febc2e; }
+  .peek-bar i:nth-child(3) { background: #28c840; }
+  .peek-bar b {
+    flex: 1;
+    height: 9px;
+    margin-left: 6px;
+    border-radius: 5px;
+    background: #353535;
+  }
+  .peek-card img { display: block; width: 256px; height: 160px; object-fit: cover; }
+  /* Touch screens have no hover. */
+  @media (hover: none) { .peek-card { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .peek-card { transition: none; } }
 
-  /* ----- Top-right cluster (email + theme toggle) ----- */
   /* ----- Last visitor line ----- */
   .last-visitor {
     margin: 0;
     font-size: clamp(0.8rem, 0.95vw, 0.9rem);
-    color: var(--text-muted);
-    text-align: right;
     line-height: 1.3;
+    text-align: left;
+    color: var(--text-muted);
     animation: lv-fade 0.4s ease both;
   }
   .last-visitor[hidden] { display: none; }
@@ -489,14 +471,17 @@ const year = new Date().getFullYear();
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ----- Theme toggle button ----- */
+  /* ----- Theme toggle (top-right of the column) ----- */
   .theme-toggle {
+    position: absolute;
+    top: -4px;
+    right: 0;
     flex: none;
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
-    margin: 0 0 clamp(18px, 2.4vw, 28px);
+    width: 32px;
+    height: 32px;
+    margin: 0;
     padding: 0;
     border-radius: 999px;
     cursor: pointer;
@@ -517,113 +502,32 @@ const year = new Date().getFullYear();
   }
   /* Flip the contrast glyph when switching themes for a subtle cue. */
   :root[data-theme='light'] .theme-toggle .icon { transform: rotate(180deg); }
-
   @media (prefers-reduced-motion: reduce) {
     .theme-toggle .icon { transition: none; }
   }
 
-  /* ----- Dashed divider (from the Figma frame) ----- */
+  /* ----- Dashed divider ----- */
   .divider {
     width: 100%;
     height: 1px;
+    margin: 0;
     border: none;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--divider) 0 8px,
-      transparent 8px 20px
-    );
-    margin: clamp(22px, 2.6vw, 34px) 0 0;
+    background: repeating-linear-gradient(90deg, var(--divider) 0 8px, transparent 8px 20px);
   }
 
   /* ----- Music widget slot ----- */
   .music-slot {
     align-self: stretch;
     width: 100%;
-    max-width: none;
-    margin-top: clamp(14px, 1.8vw, 22px);
+    margin: 0;
   }
 
-  /* ----- Responsive: tablet / mobile ----- */
-  /* The dock is wide + centered; at/below 1024px it would collide with the
-     corner email/footer, so lift those above it. */
-  @media (max-width: 1024px) {
-    .email { bottom: 100px; right: 16px; }
-    .footer { bottom: 100px; left: 16px; }
-    /* Those two are absolutely positioned, so the card has to reserve room for
-       them or flow content runs underneath. Must clear 100px + line height. */
-    .card { padding-bottom: 136px; }
-  }
-
-  @media (max-width: 720px) {
-    .top {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: clamp(20px, 5vw, 32px);
-    }
-    .name-row { gap: 12px 16px; }
-    .last-visitor { text-align: left; }
-  }
-
-  @media (max-width: 480px) {
-    .name { font-size: 1.7rem; }
-  }
-
-  @media (max-width: 360px) {
-    .name { font-size: 1.45rem; }
-  }
-
-  /* ----- Phones: email + footer rejoin the normal flow -----
-     Above this width both are pinned to the card's bottom corners, which only
-     holds while the viewport is wide enough to keep them apart. Below it they
-     were stacked at bottom: 134px / 106px — 28px apart, which is less than the
-     email's line box once the address no longer fits on one line, so the two
-     collided with each other and with the dock. Absolute offsets can't fix
-     that: they'd have to know the rendered text height. Flowing them at the end
-     of the card does, and the card then reserves room for the dock instead of
-     for two hardcoded offsets.
-     Placed last in the sheet so it wins over the 1024px block, which also
-     matches at these widths. */
-  @media (max-width: 560px) {
-    .email,
-    .footer {
-      position: static;
-      inset: auto;
-      max-width: 100%;
-      text-align: center;
-      /* Both are nowrap in the corner layout. In flow a long address has to be
-         allowed to break instead of running off the card. */
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .email {
-      display: flex;
-      justify-content: center;
-      /* The card is a flex column, so auto here pushes the email + footer pair
-         to the bottom of the card no matter how short the content is. Without
-         it a short page leaves them mid-card, where the fixed dock covers them.
-         The gap has to be padding, not margin — margin-top: auto eats it. */
-      margin: auto auto 0;
-      padding-top: clamp(24px, 7vw, 36px);
-      opacity: 1;
-    }
-    /* The corner version clipped with an ellipsis; wrapping replaces that. A
-       long address is one unbroken word, so it needs an explicit break rule and
-       min-width: 0 to stop the flex item from forcing its own min-content. */
-    .email span {
-      min-width: 0;
-      overflow: visible;
-      text-overflow: clip;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .footer { margin: 10px auto 0; }
-
-    /* Clears the fixed dock, which the card can't measure: 28px bottom offset
-       + ~52px pill + a 30px gap, less the 12px frame the card already sits
-       inside. Erring generous — too little here is an overlap, too much is
-       whitespace. */
-    .card { padding-bottom: calc(102px + env(safe-area-inset-bottom, 0px)); }
+  /* ----- Footer ----- */
+  .footer {
+    max-width: 100%;
+    margin: 0;
+    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
   }
 </style>
