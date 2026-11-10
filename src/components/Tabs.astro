@@ -1,4 +1,5 @@
 ---
+import Support from './Support.astro';
 // Tabbed section beneath the music card.
 // Five tabs, each with its own layout ("kind"):
 //   cards     — Projects, Explorations: thumbnail left, copy right
@@ -15,7 +16,7 @@ type CardItem = {
   thumb?: string;
   /** Live site / repo. Renders the arrow icon beside the title. */
   live?: string;
-  /** Case study or write-up. Renders the "More details" link. */
+  /** Case study page the card title links to. */
   details?: string;
 };
 
@@ -48,17 +49,21 @@ type BookItem = {
   href?: string;
 };
 
-/** Optional line above a panel's content. */
-type Intro = { text: string; cta?: { label: string; href: string } };
-
-/** Optional titled block below a panel's content, pointing somewhere else. */
-type Outro = { title: string; text: string; cta: { label: string; href: string } };
+type PostItem = {
+  title: string;
+  description: string;
+  /** ISO date, e.g. "2026-11-09". */
+  date: string;
+  href: string;
+};
 
 type Tab =
-  | { id: string; label: string; kind: 'cards'; intro?: Intro; outro?: Outro; items: CardItem[] }
-  | { id: string; label: string; kind: 'rings'; intro?: Intro; outro?: Outro; items: RingItem[] }
-  | { id: string; label: string; kind: 'guestbook'; intro?: Intro; outro?: Outro; items: GuestItem[] }
-  | { id: string; label: string; kind: 'shelf'; intro?: Intro; outro?: Outro; items: BookItem[] };
+  | { id: string; label: string; kind: 'list'; items: { title: string; description: string; href?: string }[] }
+  | { id: string; label: string; kind: 'writing'; items: PostItem[] }
+  | { id: string; label: string; kind: 'cards'; inProgress?: boolean; items: CardItem[] }
+  | { id: string; label: string; kind: 'rings'; items: RingItem[] }
+  | { id: string; label: string; kind: 'guestbook'; items: GuestItem[] }
+  | { id: string; label: string; kind: 'shelf'; items: BookItem[] };
 
 const THUMB = '/assets/thumb-placeholder.svg';
 const COVER = '/assets/cover-placeholder.svg';
@@ -72,39 +77,55 @@ const RESUME_URL = '/Jeremiah-Alalade-Resume.pdf';
 // erroring, so this is a bad thing to duplicate.
 const RING_SLUG = 'jeremiah';
 
+// ---- Writing: every Markdown file in src/content/writing becomes a post ----
+// Add a file, redeploy, and it shows up here (newest first). Files whose name
+// starts with "_" and posts with `draft: true` are skipped.
+const postModules = import.meta.glob('../content/writing/*.md', { eager: true }) as Record<
+  string,
+  { frontmatter: { title: string; description?: string; date: string; draft?: boolean } }
+>;
+const posts: PostItem[] = Object.entries(postModules)
+  .map(([path, mod]) => ({
+    slug: path.split('/').pop()!.replace(/\.md$/, ''),
+    ...mod.frontmatter,
+  }))
+  .filter((p) => !p.slug.startsWith('_') && !p.draft)
+  .sort((a, b) => +new Date(b.date) - +new Date(a.date))
+  .map((p) => ({
+    title: p.title,
+    description: p.description ?? '',
+    date: String(p.date),
+    href: `/writing/${p.slug}`,
+  }));
+
 // ---- Edit me: this is the only part you need to touch ----
 const tabs: Tab[] = [
   {
     id: 'projects',
     label: 'Projects',
     kind: 'cards',
-    // The href is a tab id, not a page — the hash switches tabs in place.
-    outro: {
-      title: 'Guestbook',
-      text: 'Leave your mark. A space for visitors to say hello, where everyone gets their own unique, custom-generated stamp :)',
-      cta: { label: 'Sign the guestbook', href: '#guestbook' },
-    },
+    inProgress: true,
     items: [
       {
         title: 'DocuCheck Africa',
-        blurb:
-          "One expired permit can shut down an entire construction site. Not because anyone was careless, but because compliance still lives on spreadsheets, and a certificate that lapsed in March doesn't announce itself until an inspector turns up in June. DocuCheck reads the document instead. Upload a permit, a scan, or a photo taken in bad light on site, and it comes back with pass, warning or fail in plain English, in under thirty seconds. The hard part was never the AI. It was the rulebooks. COREN and NESREA in Nigeria, EPA and LUSPA in Ghana, NHBRC and SANS 10400 in South Africa. No existing tool encodes any of that, which is exactly why those documents still get checked by hand, or not at all.",
+        blurb: 'Checks construction permits against local rules and gives a pass, warning or fail.',
+        details: '/work/docucheck-africa',
         category: 'Product design / AI',
         thumb: '/assets/work/docucheck.jpg',
         live: 'https://docucheckafrica.jeremiahalalade.me/',
       },
       {
         title: 'Pixels',
-        blurb:
-          "I wanted to dither an image and every tool I found wanted me to upload it somewhere first. For a photo I had not published yet, that felt like the wrong trade. So Pixels does all of it in the browser. Nothing leaves your machine. Six algorithms: Floyd-Steinberg, Atkinson, Bayer, Stucki, Burkes, Sierra. Threshold, strength and dot size to push around, a two colour palette you set yourself, then noise, vignette, glitch and chromatic aberration on top if you want to ruin it properly. Drop, paste or browse an image in. Export at up to 4x. No account, no upload, no waiting.",
+        blurb: 'Dither any image in your browser. Nothing is uploaded.',
+        details: '/work/pixels',
         category: 'Browser tool / Creative coding',
         thumb: '/assets/work/pixels.jpg',
         live: 'https://pixels.jeremiahalalade.me/',
       },
       {
         title: 'Spring Citadel International School',
-        blurb:
-          "A school running since 2008 with nothing online a parent could judge it by. A Facebook page and word of mouth in Minna, and that was it. Parents ask the same three things before they enrol: what does this place actually stand for, how do the students do, and how do I start. So the site answers those in that order and then gets out of the way. It also has to load on a bad connection, on a phone, on the first try. That shaped more decisions than anything aesthetic did.",
+        blurb: 'A fast, clear website for a Minna school with no online presence.',
+        details: '/work/spring-citadel-international-school',
         category: 'Web design / Development',
         thumb: '/assets/work/spring-citadel.jpg',
         live: 'https://www.springcitadelschool.com/',
@@ -114,153 +135,25 @@ const tabs: Tab[] = [
   {
     id: 'explorations',
     label: 'Explorations',
-    kind: 'cards',
+    kind: 'list',
     items: [
-      {
-        title: 'Koffi',
-        blurb:
-          "Love for Koffi, fear of small places. That line came first and the whole page exists to earn it. Coffee brands crowd the frame with beans and steam and hands wrapped around mugs. This one leaves space instead, because room to breathe is the actual promise, and a layout can make that argument better than another sentence of copy can.",
-        category: 'Brand / Landing page',
-        thumb: '/assets/work/koffi.jpg',
-        live: 'https://koffi.jeremiahalalade.me/',
-      },
-      {
-        title: 'Picshare',
-        blurb:
-          "I miss the version of the internet where things felt like objects you could pick up. So this is a cork board. Pin photos to it, drag them around, leave them crooked. Nothing to sign up for, nothing to optimise, no feed. Just a board that behaves the way a board should when you push a photo across it.",
-        category: 'Interaction / Drag and drop',
-        thumb: '/assets/work/picshare.jpg',
-        live: 'https://picshare.jeremiahalalade.me/',
-      },
-      {
-        title: 'Weme',
-        blurb:
-          "Selling something abstract is where landing pages give up and reach for a photo of someone smiling at a laptop. Weme captures and organises ideas across work, life and everything in between, which means there is no product shot to lean on. So the page had to make an invisible thing feel like something you could hold, without overpromising what it does.",
-        category: 'Product / Landing page',
-        thumb: '/assets/work/weme.jpg',
-        live: 'https://weme.jeremiahalalade.me/',
-      },
-      {
-        title: 'Pricing',
-        blurb:
-          "Pricing pages are where clarity matters most and gets designed least. Three tiers for a payments product, a monthly and yearly toggle, and a FAQ underneath answering the things people actually email support about. The only test that counts is whether you can compare the plans without reading anything twice.",
-        category: 'UI / Pricing page',
-        thumb: '/assets/work/pricing.jpg',
-        live: 'https://pricing.jeremiahalalade.me/',
-      },
-      {
-        title: 'Hero',
-        blurb:
-          "One hero section on its own, with nowhere to hide. One headline, one supporting line, one action. When there is no second section to carry the weight, you find out very quickly whether the message is any good or whether you were relying on scroll to save it.",
-        category: 'UI / Hero section',
-        thumb: '/assets/work/hero.jpg',
-        live: 'https://hero.jeremiahalalade.me/',
-      },
-      {
-        title: 'Apex',
-        blurb:
-          "The footer is the part of the page everyone leaves until last, so I started there on purpose. Oversized type carries the sign off, thank you for your curiosity, let's build something cool, and the link columns sit underneath without competing with it. Most footers are a dumping ground. This one had to feel like an ending.",
-        category: 'UI / Footer section',
-        thumb: '/assets/work/apex.jpg',
-        live: 'https://apex.jeremiahalalade.me/',
-      },
+      { title: 'Koffi', description: 'Coffee brand landing page built around space, not beans.', href: 'https://koffi.jeremiahalalade.me/' },
+      { title: 'Picshare', description: 'A cork board for photos you can drag and pin.', href: 'https://picshare.jeremiahalalade.me/' },
+      { title: 'Weme', description: 'Landing page for an idea-capture app.', href: 'https://weme.jeremiahalalade.me/' },
+      { title: 'Pricing', description: 'A three-tier pricing page you can read once.', href: 'https://pricing.jeremiahalalade.me/' },
+      { title: 'Hero', description: 'One hero section with nowhere to hide.', href: 'https://hero.jeremiahalalade.me/' },
+      { title: 'Apex', description: 'A footer built to feel like an ending.', href: 'https://apex.jeremiahalalade.me/' },
+      { title: 'Navara Energy Services', description: 'Homepage for an energy and marine company.' },
+      { title: 'Navara Energy Services — Contact', description: 'Contact screen with a glass-panel form.' },
+      { title: 'DocuCheck Africa — Sign in', description: 'Login screen on a construction-site backdrop.' },
+      { title: 'Spring Citadel — 404 page', description: 'A not-found page with a clear way home.' },
     ],
   },
   {
-    id: 'ui-works',
-    label: 'UI Works',
-    kind: 'cards',
-    items: [
-      {
-        title: 'Navara Energy Services',
-        blurb: 'Homepage hero for an energy advisory, marine chartering and EPC company — a full-bleed harbour photo behind a plain-spoken headline and two clear calls to action.',
-        category: 'Website',
-        thumb: '/assets/work/navara-energy.jpg',
-      },
-      {
-        title: 'Navara Energy Services — Contact',
-        blurb: 'The "let\'s talk about your project" contact screen: a dusk harbour photo carrying the mood, a glass-panel form on the right so the fields stay legible without losing the backdrop.',
-        category: 'Website',
-        thumb: '/assets/work/navara-contact.jpg',
-      },
-      {
-        title: 'DocuCheck Africa — Sign in',
-        blurb: 'Login screen for the DocuCheck Africa product, set against a construction-site backdrop so the auth flow still feels like part of the brand rather than a generic form.',
-        category: 'Web App',
-        thumb: '/assets/work/docucheck-login.jpg',
-      },
-      {
-        title: 'Spring Citadel — 404 page',
-        blurb: 'A not-found page that still does its job: plain explanation up top, a way back home on the right, and an oversized 404 so the mistake reads instantly.',
-        category: 'Website',
-        thumb: '/assets/work/spring-citadel-404.jpg',
-      },
-      {
-        title: 'Apex — Footer',
-        blurb: 'A dark sign-off footer for a fintech product: an oversized thank-you line up top, quiet link columns underneath, and a scatter of sticker-style service tags along the bottom.',
-        category: 'Website',
-        thumb: '/assets/work/apex-footer.jpg',
-      },
-    ],
-  },
-  {
-    id: 'webrings',
-    label: 'Webrings',
-    kind: 'rings',
-    items: [
-      {
-        // No slug in these URLs by design: this ring resolves your position
-        // from the referrer header, which is why referrerpolicy matters below.
-        id: 'design-systems',
-        name: 'Design Systems Webring',
-        note: 'For design system practitioners',
-        href: 'https://design-system.club/',
-        prev: 'https://design-system.club/prev',
-        next: 'https://design-system.club/next',
-      },
-      {
-        id: 'bucket',
-        name: 'Bucket Webring',
-        note: 'For people who like making things',
-        href: 'https://webring.bucketfish.me/',
-        prev: `https://webring.bucketfish.me/redirect.html?to=prev&name=${RING_SLUG}`,
-        next: `https://webring.bucketfish.me/redirect.html?to=next&name=${RING_SLUG}`,
-      },
-      {
-        id: 'hotline',
-        name: 'Hotline Webring',
-        note: 'For personal and creative sites',
-        href: 'https://hotlinewebring.club/',
-        prev: `https://hotlinewebring.club/${RING_SLUG}/previous`,
-        next: `https://hotlinewebring.club/${RING_SLUG}/next`,
-      },
-    ],
-  },
-  {
-    id: 'guestbook',
-    label: 'Guestbook',
-    kind: 'guestbook',
-    items: [
-      {
-        name: 'Fabio',
-        message: 'Super neat guestbook. Very nostalgic too. Put a smile on my face.',
-        date: '2026-07-22',
-        country: 'Brazil',
-        href: '#',
-      },
-      {
-        name: 'Likando',
-        message: 'Your work inspires me. Read a few of the writeups and the detail is unreal.',
-        date: '2026-07-01',
-        country: 'Zambia',
-      },
-      {
-        name: 'Leon',
-        message: 'Thank you for visiting my site. You have a cool website and the guestbook is even better.',
-        date: '2026-06-27',
-        country: 'Iceland',
-      },
-    ],
+    id: 'writing',
+    label: 'Writing',
+    kind: 'writing',
+    items: posts,
   },
   {
     id: 'bookshelf',
@@ -349,6 +242,65 @@ const tabs: Tab[] = [
       },
     ],
   },
+  {
+    id: 'guestbook',
+    label: 'Guestbook',
+    kind: 'guestbook',
+    items: [
+      {
+        name: 'Fabio',
+        message: 'Super neat guestbook. Very nostalgic too. Put a smile on my face.',
+        date: '2026-07-22',
+        country: 'Brazil',
+        href: '#',
+      },
+      {
+        name: 'Likando',
+        message: 'Your work inspires me. Read a few of the writeups and the detail is unreal.',
+        date: '2026-07-01',
+        country: 'Zambia',
+      },
+      {
+        name: 'Leon',
+        message: 'Thank you for visiting my site. You have a cool website and the guestbook is even better.',
+        date: '2026-06-27',
+        country: 'Iceland',
+      },
+    ],
+  },
+  {
+    id: 'webrings',
+    label: 'Webrings',
+    kind: 'rings',
+    items: [
+      {
+        // No slug in these URLs by design: this ring resolves your position
+        // from the referrer header, which is why referrerpolicy matters below.
+        id: 'design-systems',
+        name: 'Design Systems Webring',
+        note: 'For design system practitioners',
+        href: 'https://design-system.club/',
+        prev: 'https://design-system.club/prev',
+        next: 'https://design-system.club/next',
+      },
+      {
+        id: 'bucket',
+        name: 'Bucket Webring',
+        note: 'For people who like making things',
+        href: 'https://webring.bucketfish.me/',
+        prev: `https://webring.bucketfish.me/redirect.html?to=prev&name=${RING_SLUG}`,
+        next: `https://webring.bucketfish.me/redirect.html?to=next&name=${RING_SLUG}`,
+      },
+      {
+        id: 'hotline',
+        name: 'Hotline Webring',
+        note: 'For personal and creative sites',
+        href: 'https://hotlinewebring.club/',
+        prev: `https://hotlinewebring.club/${RING_SLUG}/previous`,
+        next: `https://hotlinewebring.club/${RING_SLUG}/next`,
+      },
+    ],
+  },
 ];
 
 const fmtDate = (iso: string) => {
@@ -410,19 +362,56 @@ const fmtDate = (iso: string) => {
         tabindex="0"
         hidden={i !== 0}
       >
-        {tab.intro && (
-          <p class="panel-intro">
-            {tab.intro.text}
-            {tab.intro.cta && (
-              <a class="panel-intro-cta" href={tab.intro.cta.href}>{tab.intro.cta.label}</a>
-            )}
+        {tab.items.length === 0 && (
+          <p class="empty">
+            {tab.kind === 'writing' ? 'Nothing published yet. The first post is on its way.' : 'Building something for this one.'}
           </p>
         )}
 
-        {tab.items.length === 0 && <p class="empty">Building something for this one.</p>}
+        {tab.kind === 'list' && (
+          <ul class="posts">
+            {tab.items.map((item) => (
+              <li>
+                {item.href ? (
+                  <a class="post" href={item.href} target="_blank" rel="noopener noreferrer">
+                    <span class="post-title">{item.title}</span>
+                    <span class="post-desc">{item.description}</span>
+                  </a>
+                ) : (
+                  <div class="post post-static">
+                    <span class="post-title">{item.title}</span>
+                    <span class="post-desc">{item.description}</span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {tab.kind === 'writing' && tab.items.length > 0 && (
+          <ul class="posts">
+            {tab.items.map((item) => (
+              <li>
+                <a class="post" href={item.href}>
+                  <span class="post-title">{item.title}</span>
+                  {item.description && <span class="post-desc">{item.description}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {tab.kind === 'cards' && tab.items.length > 0 && (
-          <ul class="cards">
+          <div class="cards-wrap" data-wip={tab.inProgress ? '' : undefined}>
+            {tab.inProgress && (
+              <aside class="wip-note" aria-label="Work in progress">
+                <p class="wip-label">Work in progress</p>
+                <p class="wip-text">
+                  I'm rebuilding this section to better show what I do now. While it's in progress, you can look through my <a href="#explorations">Explorations</a>, read my <a href="#writing">Writing</a>, or find me on <a href="https://github.com/jeremiqque" target="_blank" rel="noopener noreferrer">GitHub</a> for live work.
+                </p>
+              </aside>
+            )}
+          <ul class="cards" inert={tab.inProgress ? true : undefined}>
             {tab.items.map((item) => (
               <li class="card">
                 <div class="card-media">
@@ -439,7 +428,7 @@ const fmtDate = (iso: string) => {
 
                 <div class="card-body">
                   <div class="card-head">
-                    <h3 class="card-title">{item.title}</h3>
+                    <h2 class="card-title">{item.details ? <a class="card-title-link" href={item.details}>{item.title}</a> : item.title}</h2>
                     {item.live && (
                       <a
                         class="card-out"
@@ -461,29 +450,14 @@ const fmtDate = (iso: string) => {
                     {item.blurb}
                   </p>
 
-                  {item.details && (
-                    <a class="card-writeup" href={item.details}>
-                      Read the full writeup →
-                    </a>
-                  )}
-
                   <div class="card-foot">
                     <span class="card-cat">{item.category}</span>
-                    <button
-                      class="card-more"
-                      type="button"
-                      data-more
-                      aria-expanded="false"
-                      aria-controls={`blurb-${tab.id}-${item.title.replace(/\W+/g, '-').toLowerCase()}`}
-                      hidden
-                    >
-                      More Details
-                    </button>
                   </div>
                 </div>
               </li>
             ))}
           </ul>
+          </div>
         )}
 
         {tab.kind === 'rings' && tab.items.length > 0 && (
@@ -507,9 +481,9 @@ const fmtDate = (iso: string) => {
                   </a>
 
                   <div class="ring-body">
-                    <h3 class="ring-name" id={`ring-${item.id}`}>
+                    <h2 class="ring-name" id={`ring-${item.id}`}>
                       <a href={item.href} target="_blank" rel="noopener noreferrer">{item.name}</a>
-                    </h3>
+                    </h2>
                     <p class="ring-note">{item.note}</p>
                   </div>
 
@@ -686,25 +660,104 @@ const fmtDate = (iso: string) => {
           </ul>
         )}
 
-        {tab.outro && (
-          <aside class="outro">
-            <h3 class="outro-title">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
-                <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v14.5H5.5A1.5 1.5 0 0 0 4 20V5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                <path d="M8 8.5h7M8 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              <span>{tab.outro.title}</span>
-            </h3>
-            <p class="outro-text">{tab.outro.text}</p>
-            <a class="outro-cta" href={tab.outro.cta.href} data-tab-link>
-              {tab.outro.cta.label}
-            </a>
-          </aside>
-        )}
+        {tab.id === 'projects' && <Support />}
       </div>
     ))
   }
 </section>
+
+<script is:inline>
+  // List rows share one highlight that glides from row to row and leans toward
+  // the pointer; the tab bar fades at whichever edge has more to scroll to.
+  // (Behaviour studied on raphaelsalaja.com; own code.)
+  (function () {
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ----- Tab bar: soft edge fades while it can still scroll -----
+    var row = document.querySelector('.tab-row');
+    if (row) {
+      var fade = function () {
+        var max = row.scrollWidth - row.clientWidth;
+        row.style.setProperty('--fs', row.scrollLeft > 2 ? '28px' : '0px');
+        row.style.setProperty('--fe', max - row.scrollLeft > 2 ? '28px' : '0px');
+      };
+      row.addEventListener('scroll', fade, { passive: true });
+      window.addEventListener('resize', fade);
+      fade();
+      // Keep the chosen tab in view when it sits partly off-screen.
+      row.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('[role=tab]');
+        if (t) t.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+      });
+    }
+
+    if (reduced) return;
+    var curve = function (v) { v = Math.max(-1, Math.min(1, v)); return Math.sign(v) * (1 - Math.sqrt(1 - Math.abs(v))); };
+
+    Array.prototype.forEach.call(document.querySelectorAll('ul.posts'), function (ul) {
+      var pill = document.createElement('li');
+      pill.className = 'posts-pill snap';
+      pill.setAttribute('aria-hidden', 'true');
+      pill.setAttribute('role', 'presentation');
+      ul.appendChild(pill);
+      ul.classList.add('has-pill');
+
+      var active = null, hideTimer = 0, visible = false;
+
+      function place(li) {
+        var a = li.firstElementChild;
+        if (!a) return;
+        var u = ul.getBoundingClientRect(), r = a.getBoundingClientRect();
+        pill.style.top = (r.top - u.top) + 'px';
+        pill.style.left = (r.left - u.left) + 'px';
+        pill.style.width = r.width + 'px';
+        pill.style.height = r.height + 'px';
+      }
+      function shift(a, x, y) {
+        a.style.setProperty('--dx', x.toFixed(2) + 'px');
+        a.style.setProperty('--dy', y.toFixed(2) + 'px');
+      }
+
+      Array.prototype.forEach.call(ul.children, function (li) {
+        if (li === pill) return;
+        li.addEventListener('pointerenter', function (e) {
+          if (e.pointerType === 'touch') return;
+          clearTimeout(hideTimer);
+          if (active && active !== li) shift(active.firstElementChild, 0, 0);
+          // First entry appears in place; moving between rows glides.
+          pill.classList.toggle('snap', !visible);
+          active = li;
+          place(li);
+          visible = true;
+          pill.style.opacity = '1';
+        });
+        li.addEventListener('pointerleave', function () {
+          if (li.firstElementChild) shift(li.firstElementChild, 0, 0);
+          hideTimer = setTimeout(function () {
+            visible = false; active = null;
+            pill.style.opacity = '0';
+            pill.style.transform = '';
+          }, 500);
+        });
+      });
+
+      ul.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'touch' || !active) return;
+        var a = active.firstElementChild;
+        if (!a) return;
+        var r = a.getBoundingClientRect();
+        var nx = (e.clientX - r.left) / r.width * 2 - 1;
+        var ny = (e.clientY - r.top) / r.height * 2 - 1;
+        var x = 10 * curve(nx), y = 6 * curve(ny);
+        pill.style.transform =
+          'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px) rotateX(' + (-Math.max(-1, Math.min(1, ny)) * 1.2).toFixed(2) +
+          'deg) rotateY(' + (Math.max(-1, Math.min(1, nx)) * 0.8).toFixed(2) + 'deg)';
+        shift(a, x * 0.18, y * 0.18);
+      });
+      ul.addEventListener('pointerleave', function () { pill.style.transform = ''; });
+    });
+  })();
+</script>
 
 <script is:inline>
   (function () {
@@ -765,71 +818,6 @@ const fmtDate = (iso: string) => {
     window.addEventListener('hashchange', function () {
       select((location.hash || '').replace('#', ''));
     });
-
-    // In-panel links that point at another tab. hashchange covers most of it,
-    // but it doesn't fire when the hash is already the target, so handle the
-    // click directly. Both function declarations below are hoisted, and by the
-    // time anyone clicks, the script has finished running.
-    Array.prototype.slice.call(root.querySelectorAll('[data-tab-link]')).forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        var id = (link.getAttribute('href') || '').replace('#', '');
-        if (!select(id, { hash: true })) return;
-        e.preventDefault();
-        measure();
-        if (id === 'guestbook') loadGuests();
-        var active = root.querySelector('[data-tab="' + id + '"]');
-        if (active) active.focus();
-      });
-    });
-
-    // ----- "More details" / "Less details" blurb expansion -----
-    var COLLAPSED = '4.5em';
-
-    function setup(btn) {
-      var card = btn.closest('.card');
-      var blurb = card && card.querySelector('[data-blurb]');
-      if (!blurb) return;
-
-      // Nothing clipped means nothing to reveal — leave the button hidden.
-      if (blurb.scrollHeight <= blurb.clientHeight + 1) return;
-      btn.hidden = false;
-
-      btn.addEventListener('click', function () {
-        var opening = !card.classList.contains('is-open');
-        btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
-        btn.textContent = opening ? 'Less Details' : 'More Details';
-
-        if (opening) {
-          // Drop the clamp first so scrollHeight reports the true full height,
-          // then animate max-height up to it.
-          card.classList.add('is-open');
-          blurb.style.maxHeight = blurb.scrollHeight + 'px';
-        } else {
-          // Stay unclamped through the collapse, otherwise the clamp snaps to
-          // 3 lines instantly and there is nothing to watch. The clamp goes
-          // back on once the transition lands.
-          blurb.style.maxHeight = blurb.scrollHeight + 'px';
-          requestAnimationFrame(function () {
-            blurb.style.maxHeight = COLLAPSED;
-          });
-          var settled = false;
-          var finish = function () {
-            if (settled) return;
-            settled = true;
-            blurb.removeEventListener('transitionend', onEnd);
-            card.classList.remove('is-open');
-            blurb.style.maxHeight = '';
-          };
-          var onEnd = function (e) {
-            if (e.propertyName === 'max-height') finish();
-          };
-          blurb.addEventListener('transitionend', onEnd);
-          // transitionend never fires under prefers-reduced-motion, where the
-          // transition is off — so always keep a timer as the backstop.
-          setTimeout(finish, 400);
-        }
-      });
-    }
 
     // ----- Guestbook: live entries + signing -----
     var guests = root.querySelector('[data-guests]');
@@ -991,25 +979,10 @@ const fmtDate = (iso: string) => {
       });
     }
 
-    var mores = Array.prototype.slice.call(root.querySelectorAll('[data-more]'));
-    // Panels other than the first are hidden, so their blurbs measure 0 until
-    // shown. Re-run setup for a panel the first time it becomes visible.
-    function measure() {
-      mores.forEach(function (btn) {
-        if (btn.dataset.ready) return;
-        var panel = btn.closest('[data-panel]');
-        if (panel && panel.hidden) return;
-        btn.dataset.ready = '1';
-        setup(btn);
-      });
-    }
-    measure();
     tabs.forEach(function (tab) {
       tab.addEventListener('click', function () {
-        measure();
         if (tab.dataset.tab === 'guestbook') loadGuests();
       });
-      tab.addEventListener('keyup', measure);
     });
     // Deep link straight to #guestbook should fetch without a click.
     if (fromHash === 'guestbook') loadGuests();
@@ -1026,12 +999,6 @@ const fmtDate = (iso: string) => {
   /* ----- Tab row ----- */
   /* Wrapper so the resume link can sit in the same visual row as the tabs
      without being a child of role="tablist". */
-  .tab-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-  }
 
   /* display: contents so the five tabs become direct flex children of
      .tab-row. As its own flex item the tablist wrapped as one block, which
@@ -1136,45 +1103,12 @@ const fmtDate = (iso: string) => {
     border-radius: 0;
     transition: border-color 0.2s ease, background-color 0.2s ease;
   }
-  .card:hover {
-    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
-  }
-
-  .card-media {
-    background: var(--mw-panel, #202020);
-  }
-  .card-media img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-    border-radius: 0;
-  }
 
   .card-body {
     min-width: 0;
     display: flex;
     flex-direction: column;
     padding: clamp(4px, 0.6vw, 8px) clamp(6px, 0.8vw, 12px) clamp(6px, 0.8vw, 10px) 0;
-  }
-
-  .card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding-bottom: clamp(8px, 1vw, 12px);
-    border-bottom: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
-  }
-
-  .card-title {
-    margin: 0;
-    min-width: 0;
-    font-size: clamp(1.05rem, 1.35vw, 1.25rem);
-    font-weight: 500;
-    line-height: 1.2;
-    color: var(--text-strong);
   }
 
   .card-out {
@@ -1212,33 +1146,6 @@ const fmtDate = (iso: string) => {
     transition: max-height 0.3s ease;
   }
 
-  .card.is-open .card-blurb {
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    display: block;
-  }
-
-  /* Only revealed once the blurb is expanded. */
-  .card-writeup {
-    display: none;
-    margin: clamp(10px, 1.2vw, 14px) 0 0;
-    align-self: flex-start;
-    font-size: clamp(0.85rem, 0.98vw, 0.93rem);
-    color: var(--text);
-    text-decoration: none;
-    border-bottom: 1px solid var(--link-underline);
-    transition: border-color 0.2s ease, color 0.2s ease;
-  }
-  .card.is-open .card-writeup { display: inline-block; }
-  .card-writeup:hover {
-    color: var(--text-strong);
-    border-bottom-color: var(--link-underline-hover);
-  }
-  .card-writeup:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 3px;
-  }
-
   .card-foot {
     margin-top: auto;
     padding-top: clamp(12px, 1.5vw, 18px);
@@ -1251,40 +1158,6 @@ const fmtDate = (iso: string) => {
 
   /* Wraps rather than truncating — these labels are short but the footer gets
      tight once the toggle sits beside them. */
-  .card-cat {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-style: italic;
-    font-size: clamp(0.8rem, 0.92vw, 0.88rem);
-    line-height: 1.4;
-    color: var(--text-muted);
-    overflow-wrap: anywhere;
-  }
-
-  .card-more {
-    flex: none;
-    appearance: none;
-    padding: 0;
-    background: none;
-    border: none;
-    border-bottom: 1px solid transparent;
-    border-radius: 0;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.875rem; /* 14px, matching the reference */
-    line-height: 1.4;
-    color: var(--tab-more, rgba(242, 242, 242, 0.6));
-    transition: border-color 0.2s ease, color 0.2s ease;
-  }
-  .card-more[hidden] { display: none; }
-  .card-more:hover {
-    color: var(--text-strong);
-    border-bottom-color: var(--link-underline-hover);
-  }
-  .card-more:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 3px;
-  }
 
   /* ----- Webrings: prev / name / next rows ----- */
   .rings {
@@ -1375,84 +1248,6 @@ const fmtDate = (iso: string) => {
   }
 
 
-  /* Intro line above a panel's content. */
-  .panel-intro {
-    margin: 0 0 clamp(14px, 1.8vw, 20px);
-    max-width: 62ch;
-    font-size: clamp(0.88rem, 1.02vw, 0.98rem);
-    line-height: 1.5;
-    color: var(--text-muted);
-  }
-
-  /* ----- Outro: titled block below a panel, pointing at another tab ----- */
-  .outro {
-    margin-top: clamp(22px, 2.6vw, 32px);
-    padding-top: clamp(16px, 2vw, 22px);
-    border-top: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
-    max-width: 62ch;
-  }
-
-  .outro-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    line-height: 1.3;
-    color: var(--text-strong);
-  }
-  .outro-title svg {
-    flex: none;
-    color: var(--link-accent, #c77667);
-  }
-
-  .outro-text {
-    margin: 8px 0 0;
-    font-size: clamp(0.88rem, 1.02vw, 0.98rem);
-    line-height: 1.5;
-    color: var(--text-muted);
-  }
-
-  .outro-cta {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: clamp(0.85rem, 0.98vw, 0.93rem);
-    color: var(--link-accent, #c77667);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: var(--link-accent-underline, rgba(199, 118, 103, 0.5));
-    transition: color 0.2s ease, text-decoration-color 0.2s ease;
-  }
-  .outro-cta:hover {
-    color: var(--link-accent-hover, #f3a89a);
-    text-decoration-color: currentColor;
-  }
-  .outro-cta:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 3px;
-  }
-
-  /* Optional call to action, on its own line under the intro copy. */
-  .panel-intro-cta {
-    display: block;
-    margin-top: 6px;
-    width: fit-content;
-    color: var(--link-accent, #c77667);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: var(--link-accent-underline, rgba(199, 118, 103, 0.5));
-    transition: color 0.2s ease, text-decoration-color 0.2s ease;
-  }
-  .panel-intro-cta:hover {
-    color: var(--link-accent-hover, #f3a89a);
-    text-decoration-color: currentColor;
-  }
-  .panel-intro-cta:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 3px;
-  }
-
   /* ----- Guestbook: add tile ----- */
   /* Two classes deep on purpose: .guest is declared further down the sheet, so
      a single .guest-add selector would lose the border and ::before contest. */
@@ -1492,18 +1287,6 @@ const fmtDate = (iso: string) => {
     outline-offset: 4px;
   }
   .guest-add.is-signing .add-plus { display: none; }
-
-  .add-icon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid currentColor;
-    font-size: 1.5rem;
-    line-height: 1;
-    /* The glyph sits high in the em box; nudge it back onto the optical centre. */
-    padding-bottom: 3px;
-  }
 
   .add-label {
     font-size: 0.8125rem;
@@ -1648,13 +1431,6 @@ const fmtDate = (iso: string) => {
   }
 
   /* Inner dashed frame, the way a stamp is perforated inside its edge. */
-  .guest::before {
-    content: '';
-    position: absolute;
-    inset: 7px;
-    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
-    pointer-events: none;
-  }
 
   .corner {
     position: absolute;
@@ -1684,16 +1460,8 @@ const fmtDate = (iso: string) => {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
-    opacity: 0.75;
+    opacity: 1;
     pointer-events: none;
-  }
-
-  .guest-date {
-    font-style: italic;
-    font-weight: 500;
-    font-size: 0.8125rem;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
   }
 
   .guest-msg {
@@ -1709,24 +1477,6 @@ const fmtDate = (iso: string) => {
     color: var(--text);
     overflow-wrap: anywhere;
   }
-
-  .guest-foot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .guest-name {
-    font-weight: 500;
-    font-size: 1.05rem;
-    line-height: 1.3;
-    color: var(--text-strong);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    text-decoration-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
-    overflow-wrap: anywhere;
-  }
   a.guest-name {
     transition: text-decoration-color 0.2s ease;
   }
@@ -1736,24 +1486,6 @@ const fmtDate = (iso: string) => {
   a.guest-name:focus-visible {
     outline: 2px solid var(--text);
     outline-offset: 3px;
-  }
-
-  .guest-from {
-    margin-top: 8px;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .guest-country {
-    font-weight: 500;
-    font-size: 1.1rem;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    line-height: 1.2;
-    color: var(--text-strong);
-    overflow-wrap: anywhere;
   }
 
   /* ----- Bookshelf: cover grid ----- */
@@ -1918,4 +1650,382 @@ const fmtDate = (iso: string) => {
   @media (max-width: 360px) {
     .shelf { --shelf-cols: 2; }
   }
+
+  /* ----- Narrow centered column (reference: raphaelsalaja.com) -----
+     The page is one ~540px column, so the cards stack: image on top, text
+     below, rounded like the reference. Placed last so it wins over the
+     desktop two-up layout above. */
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .card-body { padding: 0 clamp(4px, 1vw, 8px) clamp(4px, 1vw, 6px); }
+  .card-blurb { max-width: none; }
+  @media (min-width: 481px) {
+    .shelf { --shelf-cols: 4; }
+    .guests { --guest-cols: 2; }
+  }
+
+  /* ----- One straight line of tabs ----- */
+  .tab-row::-webkit-scrollbar { display: none; }
+  .tab,
+  .resume {
+    flex: none;
+    white-space: nowrap;
+    font-size: 0.875rem;
+  }
+  .tab { padding: 8px 12px; }
+  .resume { padding: 7px 12px 7px 12px; gap: 6px; }
+
+  /* ----- Compact project cards (reference: jakubantalik.com) -----
+     Two small cards per row instead of one long frame: icon tile top-left,
+     category top-right, then title and a two-line description. */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  .card {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 0;
+    padding: 20px;
+    border: 0;
+    border-radius: 18px;
+    overflow: visible;
+    background: color-mix(in srgb, var(--text) 5%, transparent);
+    transition: background-color 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+    background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+  .card-media {
+    background: var(--mw-panel, #202020);
+    grid-column: 1;
+    grid-row: 1;
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent);
+  }
+  .card-media img {
+    display: block;
+    width: 72px;
+    height: 72px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 0;
+    object-position: center top;
+  }
+
+  /* Flatten the wrappers so every part can sit on the card's own grid. */
+  .card-body,
+  .card-foot { display: contents; }
+
+  .card-cat {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-style: normal;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    max-width: 100%;
+    text-align: right;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: clamp(8px, 1vw, 12px);
+    border-bottom: 0;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 16px;
+    padding: 0;
+  }
+  .card-title {
+    margin: 0;
+    min-width: 0;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--text-strong);
+  }
+  .card-blurb {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin: 4px 0 0;
+    max-width: none;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    max-height: 2.9em;
+  }
+
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: minmax(0, 1fr); }
+    .card-blurb { -webkit-line-clamp: 3; line-clamp: 3; max-height: 4.4em; }
+  }
+
+  /* ----- Writing: same list as raphaelsalaja.com -----
+     Title with its description tucked underneath, no dates, and a soft
+     rounded highlight that bleeds past the text on hover. */
+  .post:hover,
+  .post:focus-visible { background: color-mix(in srgb, var(--text) 8%, transparent); }
+  .post:focus-visible { outline: 2px solid var(--text); outline-offset: 0; }
+  div.post:hover { background: transparent; }
+  .post-title {
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    font-weight: 500;
+    color: var(--text-strong);
+  }
+  .post-desc {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+    color: color-mix(in srgb, var(--text) 72%, transparent);
+  }
+
+  /* ----- Guestbook: tidy, compact stamps (two per row, equal height) ----- */
+  .guests { --guest-cols: 2 !important; gap: 12px; align-items: stretch; }
+  .guest {
+    aspect-ratio: auto !important;
+    min-height: 190px !important;
+    padding: 36px 16px 18px;
+    border-radius: 14px;
+  }
+  .guest::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18));
+    pointer-events: none;
+    border-radius: 9px; }
+  .guest .corner { display: none; }
+  .guest-date {
+    font-style: italic;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    position: absolute;
+    top: 16px;
+    left: 18px; }
+  .postmark {
+    top: 9px; right: 10px;
+    width: 38px; height: 38px;
+    font-size: 0.38rem;
+  }
+  .guest-msg {
+    padding: 8px 2px 12px;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    align-items: center;
+  }
+  .guest-foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    margin-top: auto; }
+  .guest-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: var(--text-strong);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--tab-border-hover, rgba(255, 255, 255, 0.32));
+    overflow-wrap: anywhere; }
+  .guest-from {
+    margin-top: 6px;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted); }
+  .guest-country {
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    color: var(--text-strong);
+    overflow-wrap: anywhere; }
+  .guest.guest-add { min-height: 190px !important; padding: 16px; }
+  .add-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid currentColor;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding-bottom: 3px; }
+  @media (max-width: 420px) { .guests { --guest-cols: 1 !important; } }
+
+  .cards { align-items: stretch; }
+
+  /* ----- Motion, taken from raphaelsalaja.com -----
+     His timings: press .1s, hover .22s, panels .3s, with an ease-out curve.
+     Panels fade in through a soft blur; anything pressable shrinks slightly. */
+  :root {
+    --d-quick: 100ms;
+    --d-snappy: 220ms;
+    --d-smooth: 300ms;
+    --e-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --e-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  @keyframes panel-in {
+    from { opacity: 0; filter: blur(4px); scale: 0.99; }
+    to   { opacity: 1; filter: blur(0);   scale: 1; }
+  }
+  .panel { animation: panel-in var(--d-smooth) var(--e-out-cubic) both; }
+
+  .tab,
+  .card,
+  .post,
+  .guest.guest-add,
+  .book {
+    transition-timing-function: var(--e-out-cubic);
+  }
+  .tab {
+    transition:
+      background-color var(--d-snappy) ease,
+      color var(--d-snappy) ease,
+      border-color var(--d-snappy) ease,
+      scale var(--d-quick) var(--e-out-cubic);
+  }
+  .tab:active { scale: 0.97; }
+  .card { transition: background-color var(--d-snappy) ease, border-color var(--d-snappy) ease, scale var(--d-quick) var(--e-out-cubic); }
+  .card:active { scale: 0.985; }
+  .post {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 8px 12px;
+    margin: 0 -12px;
+    border-radius: 10px;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--d-snappy) ease, scale var(--d-quick) var(--e-out-cubic); }
+  a.post:active { scale: 0.985; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel { animation: none; }
+    .tab, .card, .post { transition: none; }
+    .tab:active, .card:active, a.post:active { scale: 1; }
+  }
+
+  /* ----- List hover: one shared highlight that glides between rows ----- */
+  .posts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    perspective: 800px; }
+  .posts > li { position: relative; z-index: 1; }
+  .posts > :global(.posts-pill) {
+    position: absolute;
+    top: 0; left: 0; width: 0; height: 0;
+    z-index: 0;
+    margin: 0;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    list-style: none;
+    transform-origin: 50% 50%;
+    transition:
+      top 0.34s var(--e-out-quart), left 0.34s var(--e-out-quart),
+      width 0.34s var(--e-out-quart), height 0.34s var(--e-out-quart),
+      opacity 0.8s ease, transform 0.22s var(--e-out-cubic);
+  }
+  .posts > :global(.posts-pill.snap) { transition: opacity 0.8s ease, transform 0.22s var(--e-out-cubic); }
+  .posts:global(.has-pill) a.post:hover,
+  .posts:global(.has-pill) a.post:focus-visible { background: transparent; }
+  .posts:global(.has-pill) a.post {
+    translate: var(--dx, 0px) var(--dy, 0px);
+    transition: translate 0.3s var(--e-out-cubic), scale var(--d-quick) var(--e-out-cubic);
+  }
+
+  /* ----- Tab bar edge fade while it can scroll ----- */
+  .tab-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fs, 0px), #000 calc(100% - var(--fe, 0px)), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 var(--fs, 0px), #000 calc(100% - var(--fe, 0px)), transparent);
+  }
+
+  .card-title a,
+  .card-title-link,
+  .card-title-link:visited,
+  .card-title-link:active { color: inherit !important; background: none !important; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  .card-title-link:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .card-title-link:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 3px; }
+  /* Work-in-progress note laid over the blurred project list. */
+  .cards-wrap[data-wip] { display: grid; }
+  .cards-wrap[data-wip] > * { grid-area: 1 / 1; }
+  .cards-wrap[data-wip] .cards { filter: blur(7px); opacity: 0.5; pointer-events: none; user-select: none; }
+  .wip-note {
+    position: sticky;
+    top: 24vh;
+    z-index: 2;
+    align-self: start;
+    justify-self: center;
+    width: min(calc(100% - 20px), 360px);
+    margin-top: clamp(36px, 10vh, 90px);
+    padding: 24px 24px 20px;
+    border-radius: 3px;
+    background: #f4ecbd;
+    color: #2a2618;
+    text-align: center;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 14px 32px -10px rgba(0, 0, 0, 0.45);
+    rotate: -1.6deg;
+    transition: rotate 0.35s var(--e-out-cubic), translate 0.35s var(--e-out-cubic);
+    animation: wip-drop 0.7s var(--e-out-quart) both;
+  }
+  .wip-note:hover { rotate: -0.6deg; translate: 0 -2px; }
+  .wip-note::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 78px;
+    height: 22px;
+    margin-left: -39px;
+    background: rgba(203, 72, 52, 0.6);
+    rotate: 3deg;
+  }
+  .wip-label { margin: 0 0 8px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(42, 38, 24, 0.6); }
+  .wip-text { margin: 0; font-size: 0.95rem; line-height: 1.5; text-wrap: balance; }
+  .wip-text a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(42, 38, 24, 0.45); }
+  .wip-text a:hover { text-decoration-color: currentColor; }
+  .wip-text a:focus-visible { outline: 2px solid #2a2618; outline-offset: 2px; border-radius: 2px; }
+  @keyframes wip-drop {
+    from { opacity: 0; translate: 0 -16px; rotate: -5deg; }
+    to { opacity: 1; translate: 0 0; rotate: -1.6deg; }
+  }
+  @media (prefers-reduced-motion: reduce) { .wip-note { animation: none; transition: none; } }
 </style>

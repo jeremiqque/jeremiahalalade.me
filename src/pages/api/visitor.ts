@@ -19,7 +19,6 @@ const KEY = "last_visitor";
 const RESPONSE_HEADERS = {
   "Content-Type": "application/json",
   "Cache-Control": "no-store",
-  "Access-Control-Allow-Origin": "*",
 };
 
 interface Visitor {
@@ -45,7 +44,13 @@ function readGeo(request: Request): Visitor | null {
   const rawCity = h.get("x-vercel-ip-city");
   const rawCountry = h.get("x-vercel-ip-country");
   if (!rawCity || !rawCountry) return null;
-  const city = decodeURIComponent(rawCity).trim();
+  let city = rawCity;
+  try {
+    city = decodeURIComponent(rawCity);
+  } catch {
+    // Malformed escape sequence: use the raw header value.
+  }
+  city = city.trim();
   const country = countryName(rawCountry.trim());
   if (!city || !country) return null;
   return { city, country };

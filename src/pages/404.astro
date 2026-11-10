@@ -1,0 +1,341 @@
+---
+// 404 page. References from 404s.design: huge typographic "404", a playful
+// line of copy, one clear way back, and a small piece of interaction — the
+// zero is a face whose eyes follow the pointer.
+import SoundToggle from '../components/SoundToggle.astro';
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preload" href="/fonts/PPNeueCorp-CompactMedium.woff2" as="font" type="font/woff2" crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>404 · Jeremiah Alalade</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23181818'/><rect x='3' y='3' width='26' height='26' rx='3' fill='%23202020'/></svg>" />
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <main class="page">
+      <div class="bar">
+        <SoundToggle />
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="3" x2="12" y2="21" />
+            <line x1="12" y1="9" x2="16.65" y2="4.35" />
+            <line x1="12" y1="14.3" x2="19.37" y2="6.93" />
+            <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
+          </svg>
+        </button>
+      </div>
+
+      <section class="hero">
+        <h1 class="big" aria-label="404">
+          <span aria-hidden="true">4</span>
+          <span class="zero" data-face aria-hidden="true">
+            <svg viewBox="0 0 100 120" focusable="false">
+              <ellipse class="ring" cx="50" cy="60" rx="38" ry="52" />
+              <g class="eyes" data-eyes>
+                <rect class="eye" x="31" y="46" width="11" height="26" rx="5.5" />
+                <rect class="eye" x="58" y="46" width="11" height="26" rx="5.5" />
+              </g>
+            </svg>
+          </span>
+          <span aria-hidden="true">4</span>
+        </h1>
+
+        <p class="line">Page <s>not</s> found</p>
+        <p class="sub">
+          This link is broken, or I moved things around. Either way, there is
+          nothing here. Let’s get you back to something real.
+        </p>
+
+        <nav class="actions" aria-label="Ways back">
+          <a class="btn" href="/">Back home</a>
+          <a class="link" href="/#projects">See projects</a>
+        </nav>
+      </section>
+
+      <p class="foot">© {year} Jeremiah Alalade</p>
+    </main>
+  </body>
+</html>
+
+<script is:inline>
+  (function () {
+    var btn = document.querySelector('.theme-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      });
+    }
+
+    // The zero's eyes follow the pointer, and blink now and then.
+    var face = document.querySelector('[data-face]');
+    var eyes = document.querySelector('[data-eyes]');
+    if (!face || !eyes) return;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var MAX = 9; // furthest the eyes travel, in SVG units
+    var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+
+    function frame() {
+      cx += (tx - cx) * 0.18;
+      cy += (ty - cy) * 0.18;
+      eyes.style.transform = 'translate(' + cx.toFixed(2) + 'px,' + cy.toFixed(2) + 'px)';
+      raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.02 ? requestAnimationFrame(frame) : 0;
+    }
+    function look(x, y) {
+      if (reduced.matches) return;
+      var r = face.getBoundingClientRect();
+      var dx = x - (r.left + r.width / 2);
+      var dy = y - (r.top + r.height / 2);
+      var d = Math.hypot(dx, dy) || 1;
+      var k = Math.min(1, d / 260);
+      tx = (dx / d) * MAX * k;
+      ty = (dy / d) * MAX * k;
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    document.addEventListener('pointermove', function (e) { look(e.clientX, e.clientY); });
+    document.addEventListener('pointerdown', function (e) { look(e.clientX, e.clientY); });
+
+    function blink() {
+      eyes.classList.add('blink');
+      setTimeout(function () { eyes.classList.remove('blink'); }, 140);
+      setTimeout(blink, 2200 + Math.random() * 3200);
+    }
+    if (!reduced.matches) setTimeout(blink, 1800);
+  })();
+</script>
+
+<style is:global>
+  @font-face {
+    font-family: 'Nimbu Demo';
+    src: url('/fonts/NimbuDemo-Medium.woff2') format('woff2'), url('/fonts/NimbuDemo-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Neue Corp Compact';
+    src: url('/fonts/PPNeueCorp-CompactMedium.woff2') format('woff2'), url('/fonts/PPNeueCorp-CompactMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    --font-heading: 'Nimbu Demo', sans-serif;
+    --font-body: 'PP Neue Corp Compact', sans-serif;
+  }
+  :root,
+  :root[data-theme='dark'] {
+    --bg: #080808;
+    --text: #f2f2f2;
+    --text-strong: #fefefe;
+    --text-muted: rgba(242, 242, 242, 0.55);
+    --link-underline: rgba(242, 242, 242, 0.45);
+    --link-underline-hover: #f2f2f2;
+    --toggle-bg: rgba(255, 255, 255, 0.06);
+    --toggle-border: rgba(255, 255, 255, 0.16);
+    --toggle-bg-hover: rgba(255, 255, 255, 0.12);
+    --accent: #cb4834;
+  }
+  :root[data-theme='light'] {
+    --bg: #f3f3f3;
+    --text: #1f1f1f;
+    --text-strong: #0d0d0d;
+    --text-muted: rgba(31, 31, 31, 0.7);
+    --link-underline: rgba(31, 31, 31, 0.4);
+    --link-underline-hover: #1f1f1f;
+    --toggle-bg: rgba(0, 0, 0, 0.05);
+    --toggle-border: rgba(0, 0, 0, 0.14);
+    --toggle-bg-hover: rgba(0, 0, 0, 0.1);
+    --accent: #cb4834;
+  }
+
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .page {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 688px;
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Toggles sit in the top-right corner of the column. */
+  .bar {
+    position: absolute;
+    top: 60px;
+    right: 24px;
+    width: 72px;
+    height: 32px;
+  }
+  .bar .sound-toggle { right: 40px; top: 0; }
+  .theme-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--text);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+  .theme-toggle:hover { background: var(--toggle-bg-hover); }
+  .theme-toggle:active { transform: scale(0.92); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .hero {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0;
+    padding: 48px 0;
+  }
+
+  /* ----- The big 404 ----- */
+  .big {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.04em;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(7.5rem, 30vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    user-select: none;
+  }
+  .zero {
+    display: inline-block;
+    height: 0.74em;
+    aspect-ratio: 100 / 120;
+  }
+  .zero svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .ring {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 15;
+  }
+  .eye { fill: currentColor; }
+  .eyes {
+    transform-box: view-box;
+    transition: none;
+  }
+  .eyes .eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.07s ease;
+  }
+  .eyes.blink .eye { transform: scaleY(0.12); }
+
+  /* ----- Copy ----- */
+  .line {
+    margin: clamp(20px, 4vw, 32px) 0 0;
+    font-size: clamp(1.4rem, 3.4vw, 1.9rem);
+    line-height: 1.2;
+    color: var(--text-strong);
+  }
+  .line s {
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--accent);
+    opacity: 0.85;
+  }
+  .sub {
+    margin: 14px 0 0;
+    max-width: 38ch;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .actions {
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 11px 20px;
+    border-radius: 10px;
+    background: var(--text-strong);
+    color: var(--bg);
+    text-decoration: none;
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.97); }
+  .btn:focus-visible,
+  .link:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .link {
+    color: var(--text-strong);
+    font-size: 1.0625rem;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--link-underline);
+    transition: text-decoration-color 0.2s ease;
+  }
+  .link:hover { text-decoration-color: var(--link-underline-hover); }
+
+  .foot {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 480px) {
+    .bar { top: 24px; }
+    .page { padding-top: 24px; }
+  }
+</style>

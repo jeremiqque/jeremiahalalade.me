@@ -1,0 +1,191 @@
+---
+// "Support My Work" card. Used under the projects list and at the end of every
+// article, so it looks and behaves the same everywhere.
+---
+
+<aside class="support">
+  <div class="support-top">
+<svg class="support-cup" viewBox="0 0 48 56" width="40" height="46" fill="none" aria-hidden="true" data-cup-svg>
+      <g data-cup>
+        <path d="M9 4h30l-2 10H11L9 4Z" fill="currentColor" />
+        <rect x="7" y="16" width="34" height="9" rx="2" fill="currentColor" />
+        <path d="M10 28h28l-3.5 22a3 3 0 0 1-3 2.5h-15a3 3 0 0 1-3-2.5L10 28Z" fill="currentColor" />
+        <g data-eyes fill="#cb4834">
+          <rect data-eye x="17" y="33" width="4.6" height="9.5" rx="2.3" />
+          <rect data-eye x="26.4" y="33" width="4.6" height="9.5" rx="2.3" />
+        </g>
+      </g>
+    </svg>
+    <div>
+      <h2 class="support-title">Support My Work</h2>
+      <p class="support-text">If you've enjoyed my work or writing, you can support me by buying me a coffee. All support is greatly appreciated!</p>
+    </div>
+  </div>
+  <div class="support-foot">
+    <p class="support-follow">Follow me on{' '}<a href="https://x.com/jeremiqque" target="_blank" rel="noopener noreferrer">X</a>,{' '}<a href="https://www.linkedin.com/in/jeremiqque/" target="_blank" rel="noopener noreferrer">LinkedIn</a>{' '}and{' '}<a href="https://instagram.com/jere_miqque" target="_blank" rel="noopener noreferrer">Instagram</a></p>
+    <a class="support-btn" href="https://buymeacoffee.com/jeremiqque" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+  </div>
+</aside>
+
+<script is:inline>
+  // The coffee cup on the support card is alive: its eyes follow the pointer,
+  // it blinks, hops when you touch it, gets excited over the button and nods
+  // off if you leave it alone. (Idea from raphaelsalaja.com; own code.)
+  (function () {
+    var svg = document.querySelector('[data-cup-svg]');
+    if (!svg) return;
+    var card = svg.closest('.support');
+    var cup = svg.querySelector('[data-cup]');
+    var eyesG = svg.querySelector('[data-eyes]');
+    var eyes = Array.prototype.slice.call(svg.querySelectorAll('[data-eye]'));
+    var btn = card.querySelector('.support-btn');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var now = 0, last = 0, raf = 0;
+    var gx = 0, gy = 0, tx = 0, ty = 0;      // eye offset, current and target
+    var tilt = 0;                             // body lean
+    var hopAt = -10, blinkAt = 1.5, blinkStart = -10;
+    var near = false, excited = false, idle = 0, lookAt = 0, wander = { x: 0, y: 0 };
+    var open = 1, wide = 1;
+
+    function lerp(a, b, k) { return a + (b - a) * k; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    // Squash, stretch, leap, land and settle (0.75s).
+    function hop(t) {
+      if (t < 0 || t > 0.75) return { y: 0, sx: 1, sy: 1 };
+      if (t < 0.09) { var k = Math.sin(t / 0.09 * Math.PI / 2); return { y: 0, sx: 1 + 0.1 * k, sy: 1 - 0.14 * k }; }
+      if (t < 0.46) {
+        var u = (t - 0.09) / 0.37, s = 0.12 * Math.abs(1 - 2 * u);
+        return { y: -11 * 4 * u * (1 - u), sx: 1 - 0.5 * s, sy: 1 + s };
+      }
+      var v = (t - 0.46) / 0.29, w = 0.15 * Math.pow(1 - v, 2) * Math.cos(v * Math.PI * 2.4);
+      return { y: 0, sx: 1 + 0.7 * w, sy: 1 - w };
+    }
+
+    function frame(ts) {
+      raf = requestAnimationFrame(frame);
+      var dt = last ? Math.min((ts - last) / 1000, 0.05) : 0.016;
+      last = ts; now += dt;
+      if (!near && !excited) idle += dt; else idle = 0;
+      var asleep = idle > 22, sleepy = idle > 16;
+
+      // Where are the eyes looking?
+      if (!near && !excited && now > lookAt) {
+        var look = Math.random() < 0.5;
+        wander.x = look ? (Math.random() * 2 - 1) * 1.8 : 0;
+        wander.y = look ? (Math.random() * 2 - 1) * 1.2 : 0;
+        lookAt = now + (look ? 0.9 + Math.random() : 1.6 + Math.random() * 3);
+      }
+      var wantX = near ? tx : wander.x, wantY = near ? ty : wander.y;
+      if (asleep) { wantX = 0; wantY = 1.4; }
+      var k = 1 - Math.exp(-dt / 0.07);
+      gx = lerp(gx, wantX, k); gy = lerp(gy, wantY, k);
+
+      // Blink (a quick one now and then; closed while asleep).
+      if (now > blinkAt && !asleep) {
+        blinkStart = now;
+        blinkAt = now + 1.9 + Math.random() * 3.2;
+        if (Math.random() < 0.18) blinkAt = now + 0.26;   // double blink
+      }
+      var b = (now - blinkStart) / 0.16;
+      var blink = b >= 0 && b <= 1 ? 1 - 0.9 * Math.sin(b * Math.PI) : 1;
+      var openWant = asleep ? 0.08 : sleepy ? 0.45 : 1;
+      open = lerp(open, openWant, 1 - Math.exp(-dt / 0.12));
+      wide = lerp(wide, excited ? 1.25 : 1, 1 - Math.exp(-dt / 0.1));
+      var eyeY = Math.min(blink, open);
+
+      // Body: lean toward the pointer, gently breathe, bounce when excited.
+      tilt = lerp(tilt, near ? clamp(tx * 1.6, -4, 4) : 0, 1 - Math.exp(-dt / 0.2));
+      var breathe = 0.012 * Math.sin(now / 3.4 * Math.PI * 2);
+      var h = hop(now - hopAt);
+      var bob = excited ? -1.6 * Math.abs(Math.sin(now * Math.PI * 2.6)) : 0;
+      var sx = h.sx * (1 - 0.4 * breathe), sy = h.sy * (1 + breathe);
+      cup.setAttribute('transform',
+        'translate(0 ' + (h.y + bob).toFixed(2) + ') rotate(' + tilt.toFixed(2) + ' 24 52) ' +
+        'translate(24 52) scale(' + sx.toFixed(3) + ' ' + sy.toFixed(3) + ') translate(-24 -52)');
+      eyesG.setAttribute('transform', 'translate(' + gx.toFixed(2) + ' ' + gy.toFixed(2) + ')');
+      eyes.forEach(function (e) {
+        var bb = e.getBBox(), cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+        e.setAttribute('transform', 'translate(' + cx + ' ' + cy + ') scale(' + wide.toFixed(3) + ' ' +
+          (eyeY * wide).toFixed(3) + ') translate(' + -cx + ' ' + -cy + ')');
+      });
+    }
+
+    function aim(e) {
+      var r = svg.getBoundingClientRect();
+      var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      var d = Math.hypot(dx, dy) || 1, m = Math.min(1, d / 160);
+      tx = dx / d * 2.4 * m; ty = dy / d * 1.8 * m;
+    }
+    function jump() { if (now - hopAt > 0.8) hopAt = now; }
+
+    card.addEventListener('pointerenter', function (e) { if (e.pointerType === 'touch') return; near = true; idle = 0; });
+    card.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') return; aim(e); near = true; });
+    card.addEventListener('pointerleave', function () { near = false; excited = false; });
+    svg.addEventListener('pointerenter', jump);
+    svg.addEventListener('pointerdown', function () { hopAt = now; });
+    if (btn) {
+      btn.addEventListener('pointerenter', function () { excited = true; });
+      btn.addEventListener('pointerleave', function () { excited = false; });
+      btn.addEventListener('pointerdown', function () { hopAt = now; });
+    }
+
+    // Only animate while on screen.
+    var io = new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } }
+      else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    });
+    io.observe(svg);
+  })();
+</script>
+
+<style>
+  .support {
+    --d-quick: 100ms;
+    --d-snappy: 220ms;
+    --e-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+    margin-top: 28px;
+    padding: 18px 18px 14px;
+    border: 1px solid var(--toggle-border);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--text) 3%, transparent);
+  }
+  .support-top { display: flex; gap: 16px; align-items: flex-start; }
+  .support-cup { flex: none; margin-top: 2px; color: var(--text-strong); }
+  .support-title { margin: 0; font-size: 1rem; font-weight: 500; color: var(--text-strong); }
+  .support-text { margin: 4px 0 0; font-size: 0.9375rem; line-height: 1.5; color: var(--text-muted); }
+  .support-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--toggle-border);
+  }
+  .support-follow { margin: 0; font-size: 0.9375rem; color: var(--text-muted); }
+  .support-follow a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--link-underline);
+    transition: text-decoration-color var(--d-snappy) ease;
+  }
+  .support-follow a:hover { text-decoration-color: var(--link-underline-hover); }
+  .support-btn {
+    padding: 9px 16px;
+    border-radius: 8px;
+    background: #cb4834;
+    color: #fff;
+    font-size: 0.9375rem;
+    line-height: 1;
+    text-decoration: none;
+    transition: background-color var(--d-snappy) ease, scale var(--d-quick) var(--e-out-cubic);
+  }
+  .support-btn:hover { background: #d9573f; }
+  .support-btn:active { scale: 0.98; }
+  .support-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  @media (max-width: 480px) { .support-top { flex-direction: column; gap: 10px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .support-btn { transition: none; }
+    .support-btn:active { scale: 1; }
+  }
+</style>

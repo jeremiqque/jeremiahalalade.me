@@ -1,0 +1,292 @@
+---
+// Interface sounds + a mute button (reference: raphaelsalaja.com).
+// The sound engine is in the script below; nothing plays until a real press,
+// because browsers hold audio until the page has been interacted with.
+const SPEAKER =
+  'M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z';
+const WAVE_INNER = 'M16 9a5 5 0 0 1 0 6';
+const WAVE_OUTER = 'M19.364 18.364a9 9 0 0 0 0-12.728';
+const SLASH = 'M2 2 22 22';
+---
+
+<button
+  class="sound-toggle"
+  type="button"
+  aria-label="Mute interface sounds"
+  aria-pressed="false"
+  title="Mute interface sounds"
+  data-sound-toggle
+>
+  <svg
+    class="sound-icon"
+    data-muted="false"
+    viewBox="0 0 24 24"
+    width="17"
+    height="17"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <mask id="sound-slash-mask">
+      <rect width="24" height="24" fill="white"></rect>
+      <path class="sound-slash" d={SLASH} pathLength="1" stroke="black" stroke-width="4"></path>
+    </mask>
+    <g mask="url(#sound-slash-mask)">
+      <path class="sound-speaker" d={SPEAKER}></path>
+      <path class="sound-wave sound-wave-inner" d={WAVE_INNER}></path>
+      <path class="sound-wave sound-wave-outer" d={WAVE_OUTER}></path>
+    </g>
+    <path class="sound-slash" d={SLASH} pathLength="1"></path>
+  </svg>
+</button>
+
+<script is:inline>
+  // Same sound design as raphaelsalaja.com: two tiny synthesised cues, no files.
+  //   "click" for buttons, tabs, menu items, switches (played on press)
+  //   "tap"   for links (played on release)
+  (function () {
+    var MUTE_KEY = 'sound-muted';
+    var BUTTONS =
+      "button, summary, [role='button'], [role='switch'], [role='tab'], [role='menuitem'], " +
+      "[role='menuitemcheckbox'], [role='menuitemradio'], [role='option'], [role='checkbox'], [role='radio']";
+    var CONTROLS = BUTTONS + ", a[href], [role='link']";
+
+    var ctx = null;
+    var bus = null;
+    var noise = null;
+
+    function isMuted() {
+      try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; }
+    }
+
+    function audio() {
+      var AC = window.AudioContext;
+      if (!AC) return null;
+      try {
+        if (!ctx) ctx = new AC({ latencyHint: 'interactive' });
+        if (ctx.state === 'suspended') ctx.resume();
+        return ctx;
+      } catch (e) { return null; }
+    }
+
+    // Everything runs through a soft low-pass so it never sounds harsh.
+    function output(c) {
+      if (bus && bus.context === c) return bus;
+      var lp = c.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 6800;
+      lp.Q.value = 0.5;
+      var g = c.createGain();
+      g.gain.value = 0.9;
+      lp.connect(g);
+      g.connect(c.destination);
+      bus = lp;
+      return lp;
+    }
+
+    // A pitched blip that glides from f0 down (or up) to f1 while fading out.
+    function blip(c, out, f0, f1, gain, dur, type) {
+      var t = c.currentTime;
+      var o = c.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+      var g = c.createGain();
+      g.gain.setValueAtTime(gain, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g);
+      g.connect(out);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    }
+
+    // A short burst of filtered white noise: the "click" texture.
+    function burst(c, out, freq, type, gain, dur, q) {
+      var t = c.currentTime;
+      var src = c.createBufferSource();
+      if (!noise || noise.sampleRate !== c.sampleRate) {
+        noise = c.createBuffer(1, c.sampleRate, c.sampleRate);
+        var d = noise.getChannelData(0);
+        for (var i = 0; i < d.length; i++) d[i] = 2 * Math.random() - 1;
+      }
+      src.buffer = noise;
+      var f = c.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      f.Q.value = q == null ? 0.7 : q;
+      var g = c.createGain();
+      g.gain.setValueAtTime(gain, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f);
+      f.connect(g);
+      g.connect(out);
+      src.start(t);
+      src.stop(t + dur + 0.02);
+    }
+
+    function pitch() { return 0.96 + 0.08 * Math.random(); }
+
+    function play(kind) {
+      if (isMuted()) return;
+      try {
+        var c = audio();
+        if (!c) return;
+        var out = output(c);
+        if (kind === 'click') {
+          var k = pitch();
+          blip(c, out, 1880 * k, 760 * k, 0.16, 0.02, 'triangle');
+          burst(c, out, 2400, 'highpass', 0.26, 0.011);
+          blip(c, out, 230 * k, 120, 0.05, 0.018, 'sine');
+        } else {
+          blip(c, out, 360 * pitch(), 125, 0.2, 0.046, 'sine');
+          burst(c, out, 980, 'bandpass', 0.1, 0.024, 0.55);
+          burst(c, out, 3000, 'highpass', 0.05, 0.008);
+        }
+      } catch (e) {}
+    }
+    window.uiSound = play;
+
+    function classify(target) {
+      var el = target instanceof Element ? target : (target && target.parentElement);
+      if (!el || el.closest("input, textarea, select, [contenteditable='true']")) return null;
+      var control = el.closest(CONTROLS);
+      if (!control || control.matches(":disabled, [aria-disabled='true']")) return null;
+      return { kind: control.matches(BUTTONS) ? 'click' : 'tap', control: control };
+    }
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var pressed = new WeakMap();
+
+    // Buttons answer the moment they are pressed...
+    document.addEventListener('pointerdown', function (e) {
+      if (reduced.matches || e.button !== 0) return;
+      var hit = classify(e.target);
+      if (hit && hit.kind !== 'tap') {
+        pressed.set(hit.control, performance.now());
+        play('click');
+      }
+    }, true);
+
+    // ...links (and keyboard presses, which have no pointerdown) on release.
+    document.addEventListener('click', function (e) {
+      if (reduced.matches || e.button !== 0) return;
+      var hit = classify(e.target);
+      if (!hit) return;
+      var t = pressed.get(hit.control);
+      if (t !== undefined && performance.now() - t < 400) return;
+      play(hit.kind);
+    }, true);
+
+    // Wake the audio engine early so the first press isn't late.
+    var warm = function () { if (!reduced.matches && !isMuted()) audio(); };
+    if ('requestIdleCallback' in window) requestIdleCallback(warm); else setTimeout(warm);
+
+    // ----- The mute button -----
+    var btn = document.querySelector('[data-sound-toggle]');
+    if (!btn) return;
+    var icon = btn.querySelector('.sound-icon');
+
+    function render() {
+      var muted = isMuted();
+      icon.setAttribute('data-muted', muted ? 'true' : 'false');
+      btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      var label = muted ? 'Unmute interface sounds' : 'Mute interface sounds';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    }
+    render();
+
+    btn.addEventListener('click', function () {
+      var next = !isMuted();
+      try { localStorage.setItem(MUTE_KEY, next ? '1' : '0'); } catch (e) {}
+      render();
+      // Coming back from muted: the press itself was silent, so answer it now.
+      if (!next) play('click');
+    });
+  })();
+</script>
+
+<style is:global>
+  :root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .sound-toggle {
+    position: absolute;
+    top: -4px;
+    right: 40px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--text);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+  .sound-toggle:hover { background: var(--toggle-bg-hover); }
+  .sound-toggle:active { transform: scale(0.92); }
+  .sound-toggle:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+  }
+
+  .sound-icon { display: block; }
+
+  /* The slash draws itself in; the waves fade; the speaker slides across. */
+  .sound-slash {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1.02;
+    --slash-ms: 200ms;
+    transition: stroke-dashoffset var(--slash-ms) var(--ease-out);
+  }
+  [data-muted='true'] .sound-slash {
+    stroke-dashoffset: 0;
+    --slash-ms: 260ms;
+  }
+
+  .sound-wave {
+    transform-box: view-box;
+    transform-origin: 11px 12px;
+    transition:
+      opacity 130ms var(--ease-out) var(--wave-delay),
+      transform 130ms var(--ease-out) var(--wave-delay),
+      filter 130ms var(--ease-out) var(--wave-delay);
+  }
+  [data-muted='true'] .sound-wave {
+    opacity: 0;
+    transform: scale(0.25);
+    filter: blur(1px);
+  }
+  .sound-wave-inner { --wave-delay: 45ms; }
+  .sound-wave-outer { --wave-delay: 20ms; }
+  [data-muted='true'] .sound-wave-inner { --wave-delay: 50ms; }
+  [data-muted='true'] .sound-wave-outer { --wave-delay: 75ms; }
+
+  .sound-speaker {
+    --speaker-ms: 220ms;
+    --speaker-delay: 0ms;
+    transition: transform var(--speaker-ms) var(--ease-out) var(--speaker-delay);
+  }
+  [data-muted='true'] .sound-speaker {
+    transform: translateX(5.5px);
+    --speaker-ms: 260ms;
+    --speaker-delay: 80ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sound-slash,
+    .sound-wave,
+    .sound-speaker {
+      transition: none;
+    }
+  }
+</style>

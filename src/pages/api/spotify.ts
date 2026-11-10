@@ -13,7 +13,6 @@ const RECENTLY_PLAYED_ENDPOINT = `https://api.spotify.com/v1/me/player/recently-
 const RESPONSE_HEADERS = {
   "Content-Type": "application/json",
   "Cache-Control": "no-store",
-  "Access-Control-Allow-Origin": "*",
 };
 
 // Simple in-memory cache (replaces Vercel KV from the original site).
