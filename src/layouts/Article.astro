@@ -1,0 +1,459 @@
+---
+// Shared page for a single piece of writing or a single piece of work.
+// Reference: raphaelsalaja.com/library/* and /work/*, with the name and role
+// on top, the title and date, small icon actions, then the text in one column.
+import SoundToggle from '../components/SoundToggle.astro';
+import ScrollBlur from '../components/ScrollBlur.astro';
+import Support from '../components/Support.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  date: string;
+  /** Optional link to the live thing, shown as an icon next to the title. */
+  live?: string;
+}
+const { title, description, date, live } = Astro.props;
+const when = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description ?? title} />
+    <title>{title} · Jeremiah Alalade</title>
+    <meta name="theme-color" content="#f2f2f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#181818" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description ?? title} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23181818'/><rect x='3' y='3' width='26' height='26' rx='3' fill='%23202020'/></svg>" />
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <main class="page">
+      <div class="bar">
+        <SoundToggle />
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="3" x2="12" y2="21" />
+            <line x1="12" y1="9" x2="16.65" y2="4.35" />
+            <line x1="12" y1="14.3" x2="19.37" y2="6.93" />
+            <line x1="12" y1="19.6" x2="20.85" y2="10.75" />
+          </svg>
+        </button>
+      </div>
+
+      <a class="who" href="/">
+        <span class="who-name">Jeremiah Alalade</span>
+        <span class="who-role">Design Engineer</span>
+      </a>
+
+      <article>
+        <header class="head">
+          <div>
+            <h1 class="title">{title}</h1>
+            <p class="meta"><time datetime={date}>{when}</time></p>
+          </div>
+          <div class="actions">
+            <button class="act" type="button" data-copy="page" aria-label="Copy page text" title="Copy page text">
+              <svg class="idle" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></svg>
+              <svg class="done" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+            </button>
+            <button class="act" type="button" data-copy="link" aria-label="Copy link" title="Copy link">
+              <svg class="idle" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" /><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" /></svg>
+              <svg class="done" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+            </button>
+            {live && (
+              <a class="act" href={live} target="_blank" rel="noopener noreferrer" aria-label="Open the live site" title="Open the live site">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M17 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3" /></svg>
+              </a>
+            )}
+          </div>
+        </header>
+        <div class="prose" data-prose>
+          <slot />
+        </div>
+      </article>
+
+      <Support />
+
+      <p class="foot">© {year} Jeremiah Alalade</p>
+    </main>
+    <ScrollBlur />
+  </body>
+</html>
+
+<script is:inline>
+  (function () {
+    var btn = document.querySelector('.theme-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      });
+    }
+
+    // Figures animate once, the first time they are mostly on screen.
+    var figs = document.querySelectorAll('[data-fig]');
+    if (figs.length) {
+      if (!('IntersectionObserver' in window)) {
+        Array.prototype.forEach.call(figs, function (f) { f.classList.add('is-in'); });
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            en.target.classList.add('is-in');
+            io.unobserve(en.target);
+          });
+        }, { threshold: 0.35 });
+        Array.prototype.forEach.call(figs, function (f) { io.observe(f); });
+      }
+    }
+
+    function done(b) {
+      b.setAttribute('data-copied', 'true');
+      setTimeout(function () { b.setAttribute('data-copied', 'false'); }, 1600);
+    }
+    function copy(text, b) {
+      var ok = function () { done(b); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok, ok);
+      } else {
+        var t = document.createElement('textarea');
+        t.value = text; document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(t); ok();
+      }
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-copy]'), function (b) {
+      b.addEventListener('click', function () {
+        if (b.dataset.copy === 'link') return copy(location.href, b);
+        var title = document.querySelector('.title').textContent;
+        var body = document.querySelector('[data-prose]').innerText;
+        copy(title + '\n\n' + body, b);
+      });
+    });
+  })();
+</script>
+
+<style is:global>
+  @font-face {
+    font-family: 'Nimbu Demo';
+    src: url('/fonts/NimbuDemo-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'PP Neue Corp Compact';
+    src: url('/fonts/PPNeueCorp-CompactMedium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    --font-heading: 'Nimbu Demo', sans-serif;
+    --font-body: 'PP Neue Corp Compact', sans-serif;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  :root,
+  :root[data-theme='dark'] {
+    --bg: #080808;
+    --text: #f2f2f2;
+    --text-strong: #fefefe;
+    --text-muted: rgba(242, 242, 242, 0.55);
+    --link-underline: rgba(242, 242, 242, 0.45);
+    --link-underline-hover: #f2f2f2;
+    --toggle-bg: rgba(255, 255, 255, 0.06);
+    --toggle-border: rgba(255, 255, 255, 0.16);
+    --toggle-bg-hover: rgba(255, 255, 255, 0.12);
+  }
+  :root[data-theme='light'] {
+    --bg: #f3f3f3;
+    --text: #1f1f1f;
+    --text-strong: #0d0d0d;
+    --text-muted: rgba(31, 31, 31, 0.7);
+    --link-underline: rgba(31, 31, 31, 0.4);
+    --link-underline-hover: #1f1f1f;
+    --toggle-bg: rgba(0, 0, 0, 0.05);
+    --toggle-border: rgba(0, 0, 0, 0.14);
+    --toggle-bg-hover: rgba(0, 0, 0, 0.1);
+  }
+
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .page {
+    position: relative;
+    max-width: 688px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  .page > article { flex: 1; }
+
+  .bar { position: absolute; top: 60px; right: 24px; width: 72px; height: 32px; }
+  .bar .sound-toggle { right: 40px; top: 0; }
+  .theme-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--text);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+  .theme-toggle:hover { background: var(--toggle-bg-hover); }
+  .theme-toggle:active { transform: scale(0.92); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  .who {
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 48px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .who-name { font-size: 1.0625rem; line-height: 1.2; color: var(--text-strong); }
+  .who-role { font-size: 1.0625rem; line-height: 1.2; color: var(--text-muted); transition: color 0.22s ease; }
+  .who:hover .who-role { color: var(--text); }
+  .who:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; border-radius: 4px; }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .actions { display: flex; align-items: center; gap: 2px; margin: -4px -8px 0 0; }
+  .act {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.22s ease, background-color 0.22s ease, scale 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  .act:hover { color: var(--text-strong); background: color-mix(in srgb, var(--text) 8%, transparent); }
+  .act:active { scale: 0.95; }
+  .act:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .act svg { grid-area: 1 / 1; transition: opacity 0.22s ease, scale 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.1); }
+  .act .done { opacity: 0; scale: 0.5; }
+  .act[data-copied='true'] .idle { opacity: 0; scale: 0.5; }
+  .act[data-copied='true'] .done { opacity: 1; scale: 1; }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: clamp(1.55rem, 4.8vw, 1.95rem);
+    line-height: 1.15;
+    letter-spacing: 0;
+    color: var(--text-strong);
+  }
+  .meta {
+    margin: 12px 0 0;
+    font-size: 1.0625rem;
+    color: var(--text-muted);
+  }
+
+  /* ----- The writing itself ----- */
+  .prose {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .prose > *:first-child { margin-top: 0; }
+  .prose p { margin: 0 0 1.25em; color: color-mix(in srgb, var(--text) 82%, transparent); }
+  .prose h2,
+  .prose h3 {
+    margin: 2.2em 0 0.55em;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--text-strong);
+  }
+  .prose h2 { font-size: 1.0625rem; }
+  .prose h3 { font-size: 1rem; }
+  .prose a {
+    color: var(--text-strong);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--link-underline);
+    transition: text-decoration-color 0.2s ease;
+  }
+  .prose a:hover { text-decoration-color: var(--link-underline-hover); }
+  .prose ul,
+  .prose ol { margin: 0 0 1.25em; padding-left: 1.4em; }
+  .prose li { margin: 0.35em 0; }
+  .prose blockquote {
+    margin: 1.5em 0;
+    padding: 0 0 0 18px;
+    border-left: 2px solid var(--link-underline);
+    color: var(--text-muted);
+  }
+  .prose img,
+  .prose video {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.75em 0;
+    border-radius: 12px;
+  }
+  .prose hr {
+    margin: 2.5em 0;
+    border: 0;
+    border-top: 1px dashed var(--link-underline);
+  }
+  .prose code {
+    padding: 0.12em 0.4em;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--text) 9%, transparent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+  }
+  .prose pre {
+    margin: 1.5em 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  .prose pre code { padding: 0; background: none; font-size: inherit; }
+
+  .prose sub {
+    display: block;
+    margin: -0.6em 0 1.6em;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+  .prose figure { margin: 1.75em 0; }
+  .prose figcaption { margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
+
+  /* ----- Figures: framed illustrations that animate in when scrolled to ----- */
+  .prose .fig { margin: 2.25em 0; }
+  .fig-head {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding-bottom: 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .fig-n { color: var(--text-muted); }
+  .fig-t { color: var(--text-strong); font-weight: 600; }
+  .fig-stage { padding: clamp(18px, 4vw, 32px) clamp(0px, 2vw, 16px); }
+  .fig-stage svg { display: block; width: 100%; height: auto; overflow: visible; color: var(--text); }
+  .prose .fig figcaption {
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    text-wrap: balance;
+  }
+
+  /* ----- Quiet diagrams: lines draw in, shapes grow, labels fade ----- */
+  .fig-line { fill: none; stroke: var(--text); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .fig-line.is-faint { stroke: color-mix(in srgb, var(--text) 25%, transparent); stroke-dasharray: 3 5; stroke-dashoffset: 0; opacity: 0; }
+  .fig-node { fill: var(--bg); stroke: var(--text); stroke-width: 1.4; }
+  .fig-node.is-core { fill: var(--text); }
+  .fig-text { font-size: 14px; fill: var(--text); font-family: inherit; }
+  .fig-text.is-muted { fill: var(--text-muted); font-size: 13px; }
+  .fig-box { fill: color-mix(in srgb, var(--text) 10%, transparent); stroke: var(--text); stroke-width: 1.4; }
+  .fig-fill { fill: var(--text); }
+  .fig-track { fill: none; stroke: color-mix(in srgb, var(--text) 35%, transparent); stroke-width: 1.2; }
+  .fig-pop, .fig-grow, .fig-fade { opacity: 0; }
+  .fig-pop { transform-box: fill-box; transform-origin: center; transform: scale(0); }
+  .fig-grow { transform-box: fill-box; transform-origin: left bottom; transform: scale(var(--sx, 1), 0); }
+  .fig-grow.is-wide { transform: scale(0, 1); transform-origin: left center; }
+  .fig-fade { transform: translateY(4px); }
+  .fig.is-in .fig-line { stroke-dashoffset: 0; transition: stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1); transition-delay: calc(var(--i, 0) * 110ms); }
+  .fig.is-in .fig-line.is-faint { opacity: 1; transition: opacity 0.8s ease; transition-delay: 1.4s; }
+  .fig.is-in .fig-pop { opacity: 1; transform: none; transition: transform 0.45s var(--ease-out), opacity 0.3s ease; transition-delay: calc(0.5s + var(--i, 0) * 110ms); }
+  .fig.is-in .fig-grow { opacity: 1; transform: none; transition: transform 0.9s var(--ease-out), opacity 0.3s ease; transition-delay: calc(var(--i, 0) * 120ms); }
+  .fig.is-in .fig-fade { opacity: 1; transform: none; transition: opacity 0.6s ease, transform 0.6s var(--ease-out); transition-delay: calc(0.3s + var(--i, 0) * 90ms); }
+  .fig-box.is-win { fill: color-mix(in srgb, var(--text) 18%, transparent); }
+  .fig.is-in .fig-box.is-win { animation: fig-win 1.1s ease-out 1.6s 1 both; }
+  @keyframes fig-win { 0% { stroke-width: 1.4; } 40% { stroke-width: 3.2; } 100% { stroke-width: 1.4; } }
+  .hub-node { cursor: default; }
+  .hub-node .fig-node { transition: fill 0.2s ease; }
+  .hub-node:hover .fig-node { fill: color-mix(in srgb, var(--text) 25%, var(--bg)); }
+
+  /* Footnotes, as in the reference essays. */
+  .prose sup { font-size: 0.7em; line-height: 0; }
+  .prose sup a { text-decoration: none; padding: 0 1px; }
+  .prose .footnotes { margin-top: 3em; padding-top: 1.2em; border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent); font-size: 0.9rem; color: var(--text-muted); }
+  .prose .footnotes h2 { margin: 0 0 0.6em; font-size: 0.95rem; }
+  .prose .footnotes ol { margin: 0; padding-left: 1.2em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fig-line, .fig-pop, .fig-grow, .fig-fade { transition: none !important; }
+    .fig-box.is-win { animation: none !important; }
+    .fig-line { stroke-dashoffset: 0; }
+    .fig-line.is-faint, .fig-pop, .fig-grow, .fig-fade { opacity: 1; transform: none; }
+  }
+
+  .foot { margin: 40px 0 0; font-size: 0.85rem; color: var(--text-muted); }
+
+  @media (max-width: 480px) {
+    .page { padding-top: 24px; }
+    .bar { top: 24px; }
+    .who { margin-top: 44px; }
+    .head { flex-direction: column; gap: 12px; }
+    .actions { margin: 0 0 0 -8px; }
+  }
+</style>
