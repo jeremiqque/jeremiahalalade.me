@@ -5,16 +5,17 @@
 import SoundToggle from '../components/SoundToggle.astro';
 import ScrollBlur from '../components/ScrollBlur.astro';
 import Support from '../components/Support.astro';
+import RailToc from '../components/RailToc.astro';
 
 interface Props {
   title: string;
   description?: string;
-  date: string;
+  date?: string;
   /** Optional link to the live thing, shown as an icon next to the title. */
   live?: string;
 }
 const { title, description, date, live } = Astro.props;
-const when = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const when = date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : '';
 const year = new Date().getFullYear();
 ---
 
@@ -46,6 +47,7 @@ const year = new Date().getFullYear();
     </script>
   </head>
   <body>
+    <RailToc />
     <main class="page">
       <div class="bar">
         <SoundToggle />
@@ -65,11 +67,16 @@ const year = new Date().getFullYear();
         <span class="who-role">Design Engineer</span>
       </a>
 
+      <a class="back" href="/" data-back>
+        <span class="back-arrow"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg></span>
+        Back
+      </a>
+
       <article>
         <header class="head">
           <div>
             <h1 class="title">{title}</h1>
-            <p class="meta"><time datetime={date}>{when}</time></p>
+            {date && <p class="meta"><time datetime={date}>{when}</time></p>}
           </div>
           <div class="actions">
             <button class="act" type="button" data-copy="page" aria-label="Copy page text" title="Copy page text">
@@ -108,6 +115,18 @@ const year = new Date().getFullYear();
         var next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
         document.documentElement.dataset.theme = next;
         try { localStorage.setItem('theme', next); } catch (e) {}
+      });
+    }
+
+    // Back goes to the page they came from; falls back to the home page.
+    var back = document.querySelector('[data-back]');
+    if (back) {
+      back.addEventListener('click', function (e) {
+        var ref = document.referrer;
+        if (ref && ref.indexOf(location.origin) === 0 && history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
       });
     }
 
@@ -434,6 +453,15 @@ const year = new Date().getFullYear();
   .hub-node .fig-node { transition: fill 0.2s ease; }
   .hub-node:hover .fig-node { fill: color-mix(in srgb, var(--text) 25%, var(--bg)); }
 
+  /* Screenshots sit in a small browser window and ease into focus. */
+  .shot-frame { overflow: hidden; border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: 12px; background: var(--bg); }
+  .shot-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid color-mix(in srgb, var(--text) 12%, transparent); }
+  .shot-bar i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--text) 22%, transparent); }
+  .shot-bar span { margin-left: 8px; font-size: 0.78rem; color: var(--text-muted); }
+  .shot-frame img { display: block; width: 100%; height: auto; opacity: 0; filter: blur(8px); transform: scale(1.02); }
+  .fig.is-in .shot-frame img { opacity: 1; filter: blur(0); transform: none; transition: opacity 0.8s ease, filter 0.9s var(--ease-out), transform 1.1s var(--ease-out); }
+  @media (prefers-reduced-motion: reduce) { .shot-frame img { opacity: 1; filter: none; transform: none; transition: none !important; } }
+
   /* Footnotes, as in the reference essays. */
   .prose sup { font-size: 0.7em; line-height: 0; }
   .prose sup a { text-decoration: none; padding: 0 1px; }
@@ -457,4 +485,24 @@ const year = new Date().getFullYear();
     .head { flex-direction: column; gap: 12px; }
     .actions { margin: 0 0 0 -8px; }
   }
+  .back {
+    display: inline-flex; align-items: center; gap: 8px;
+    align-self: flex-start; margin: 28px 0 20px; padding: 6px 14px 6px 8px;
+    font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.01em;
+    color: var(--text-strong); text-decoration: none;
+    background: var(--toggle-bg);
+    border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    border-radius: 999px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, scale 0.12s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  .back:hover { background: var(--toggle-bg-hover); border-color: color-mix(in srgb, var(--text) 22%, transparent); }
+  .back:active { scale: 0.96; }
+  .back:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  .back-arrow {
+    display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease;
+  }
+  .back:hover .back-arrow { transform: translateX(-3px); background: color-mix(in srgb, var(--text) 16%, transparent); }
+  @media (prefers-reduced-motion: reduce) { .back, .back-arrow { transition: none; } }
 </style>
