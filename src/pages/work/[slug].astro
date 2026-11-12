@@ -15,6 +15,6 @@ const { Content } = post;
 const { title, description, date, live } = post.frontmatter;
 ---
 
-<Article title={title} description={description} date={String(date)} live={live}>
+<Article title={title} description={description} date={date ? String(date) : undefined} live={live}>
   <Content />
 </Article>
