@@ -29,12 +29,6 @@ All three are partly right. Taste is personal, it can be learned, and the people
 <figcaption>Hume pointed to practice, Kant to feeling and Bourdieu to class. Each one describes a different part of the same thing.</figcaption>
 </figure>
 
-## How I got mine
-
-I did not struggle to build a sense of taste, because I had a strong background in design. I started making posters at 15. Whenever I walked down the road, I noticed flyers and posters that looked great, and I tried to use what I learned from them in my own work.
-
-That habit never stopped. As a builder today, you need strong taste, and what makes your work stand out is the care you put into the details.
-
 ## How to build it
 
 There is no shortcut. You look at enough good work that you can feel the difference between good and bad.
@@ -68,6 +62,12 @@ Looking is not enough. I study why a thing works, and I note the bad examples to
 </svg></div>
 <figcaption>The same new piece of work is the filled dot on both lines. The more good and bad work you have seen, the more exactly you can say where it belongs.</figcaption>
 </figure>
+
+## My own practice
+
+I started being intentional about my taste this year, though I already had a strong background in design. I got into graphic design at 15, and I was making poster designs back then. Whenever I walked down the road, I noticed flyers and posters that looked great, and I tried to use what I learned from them in my own work.
+
+That habit never stopped. As a builder today, I keep improving my taste by exposing myself to more work, both good and bad. What makes your work stand out is the care you put into the details.
 
 ## In short
 
