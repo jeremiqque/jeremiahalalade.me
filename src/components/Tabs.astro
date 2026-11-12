@@ -2,7 +2,7 @@
 import Support from './Support.astro';
 // Tabbed section beneath the music card.
 // Five tabs, each with its own layout ("kind"):
-//   cards     — Projects, Explorations: thumbnail left, copy right
+//   cards     — Projects, Lab: thumbnail left, copy right
 //   rows      — Webrings: compact link rows
 //   guestbook — read-only list of entries (no write path yet)
 //   shelf     — Bookshelf: cover grid
@@ -58,7 +58,7 @@ type PostItem = {
 };
 
 type Tab =
-  | { id: string; label: string; kind: 'list'; items: { title: string; description: string; href?: string }[] }
+  | { id: string; label: string; kind: 'list'; items: { title: string; description: string; href: string }[] }
   | { id: string; label: string; kind: 'writing'; items: PostItem[] }
   | { id: string; label: string; kind: 'cards'; inProgress?: boolean; items: CardItem[] }
   | { id: string; label: string; kind: 'rings'; items: RingItem[] }
@@ -133,20 +133,19 @@ const tabs: Tab[] = [
     ],
   },
   {
-    id: 'explorations',
-    label: 'Explorations',
+    id: 'lab',
+    label: 'Lab',
     kind: 'list',
     items: [
-      { title: 'Koffi', description: 'Coffee brand landing page built around space, not beans.', href: 'https://koffi.jeremiahalalade.me/' },
-      { title: 'Picshare', description: 'A cork board for photos you can drag and pin.', href: 'https://picshare.jeremiahalalade.me/' },
-      { title: 'Weme', description: 'Landing page for an idea-capture app.', href: 'https://weme.jeremiahalalade.me/' },
-      { title: 'Pricing', description: 'A three-tier pricing page you can read once.', href: 'https://pricing.jeremiahalalade.me/' },
-      { title: 'Hero', description: 'One hero section with nowhere to hide.', href: 'https://hero.jeremiahalalade.me/' },
-      { title: 'Apex', description: 'A footer built to feel like an ending.', href: 'https://apex.jeremiahalalade.me/' },
-      { title: 'Navara Energy Services', description: 'Homepage for an energy and marine company.' },
-      { title: 'Navara Energy Services — Contact', description: 'Contact screen with a glass-panel form.' },
-      { title: 'DocuCheck Africa — Sign in', description: 'Login screen on a construction-site backdrop.' },
-      { title: 'Spring Citadel — 404 page', description: 'A not-found page with a clear way home.' },
+      { title: 'Koffi', description: 'Coffee brand landing page built around space, not beans.', href: '/work/koffi' },
+      { title: 'Picshare', description: 'A cork board for photos you can drag and pin.', href: '/work/picshare' },
+      { title: 'Weme', description: 'Landing page for an idea-capture app.', href: '/work/weme' },
+      { title: 'Pricing', description: 'A three-tier pricing page you can read once.', href: '/work/pricing' },
+      { title: 'Hero', description: 'One hero section with nowhere to hide.', href: '/work/hero' },
+      { title: 'Apex', description: 'A footer built to feel like an ending.', href: '/work/apex' },
+      { title: 'Navara Energy Services', description: 'Homepage for an energy and marine company.', href: '/work/navara-energy-services' },
+      { title: 'DocuCheck Africa — Sign in', description: 'Login screen on a construction-site backdrop.', href: '/work/docucheck-africa-sign-in' },
+      { title: 'Spring Citadel — 404 page', description: 'A not-found page with a clear way home.', href: '/work/spring-citadel-404-page' },
     ],
   },
   {
@@ -372,17 +371,10 @@ const fmtDate = (iso: string) => {
           <ul class="posts">
             {tab.items.map((item) => (
               <li>
-                {item.href ? (
-                  <a class="post" href={item.href} target="_blank" rel="noopener noreferrer">
-                    <span class="post-title">{item.title}</span>
-                    <span class="post-desc">{item.description}</span>
-                  </a>
-                ) : (
-                  <div class="post post-static">
-                    <span class="post-title">{item.title}</span>
-                    <span class="post-desc">{item.description}</span>
-                  </div>
-                )}
+                <a class="post" href={item.href}>
+                  <span class="post-title">{item.title}</span>
+                  <span class="post-desc">{item.description}</span>
+                </a>
               </li>
             ))}
           </ul>
@@ -407,7 +399,7 @@ const fmtDate = (iso: string) => {
               <aside class="wip-note" aria-label="Work in progress">
                 <p class="wip-label">Work in progress</p>
                 <p class="wip-text">
-                  I'm rebuilding this section to better show what I do now. While it's in progress, you can look through my <a href="#explorations">Explorations</a>, read my <a href="#writing">Writing</a>, or find me on <a href="https://github.com/jeremiqque" target="_blank" rel="noopener noreferrer">GitHub</a> for live work.
+                  I'm rebuilding this section to better show what I do now. While it's in progress, you can look through my <a href="#lab">Lab</a>, read my <a href="#writing">Writing</a>, or find me on <a href="https://github.com/jeremiqque" target="_blank" rel="noopener noreferrer">GitHub</a> for live work.
                 </p>
               </aside>
             )}
@@ -1083,7 +1075,7 @@ const fmtDate = (iso: string) => {
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ----- Projects / Explorations: cards ----- */
+  /* ----- Projects / Lab: cards ----- */
   .cards {
     margin: 0;
     padding: 0;
@@ -1977,6 +1969,12 @@ const fmtDate = (iso: string) => {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fs, 0px), #000 calc(100% - var(--fe, 0px)), transparent);
     mask-image: linear-gradient(to right, transparent, #000 var(--fs, 0px), #000 calc(100% - var(--fe, 0px)), transparent);
   }
+
+  /* Tabs share the leftover width so the row lines up with the music card.
+     On narrow screens there is no spare room, so they keep their size and the
+     row scrolls as before. */
+  .tab-row .tab,
+  .tab-row .resume { flex: 1 0 auto; justify-content: center; text-align: center; }
 
   .card-title a,
   .card-title-link,
