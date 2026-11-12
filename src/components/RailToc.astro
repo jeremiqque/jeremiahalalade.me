@@ -1,0 +1,242 @@
+---
+// "On this page" rail: a dotted line down the side of long pages with a small
+// paper plane that flies to the section you are reading. Built from the page's
+// own headings, so nothing needs to be listed by hand. It only shows on wide
+// screens and only when a page has three or more sections.
+// Idea from the rail-toc component by swamimalode07 (rare-ui), rewritten here
+// without React so it works in this Astro site.
+interface Props { title?: string }
+const { title = 'On this page' } = Astro.props;
+---
+
+<nav class="rail-toc" data-rail-toc aria-label={title} hidden>
+  <p class="rt-title">
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h8M2 12h10" /></svg>
+    {title}
+  </p>
+  <ul class="rt-list" data-rt-list></ul>
+</nav>
+
+<style is:global>
+  .rail-toc {
+    position: fixed;
+    top: 168px;
+    right: calc(50% + 344px + 40px);
+    width: 200px;
+    font-size: 0.8125rem;
+    --rail: color-mix(in srgb, var(--text) 45%, var(--bg));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .rail-toc[data-ready] { opacity: 1; }
+  .rail-toc[hidden] { display: none; }
+  @media (max-width: 1179px) { .rail-toc { display: none !important; } }
+  .rt-title { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: color-mix(in srgb, var(--text) 70%, transparent); font-weight: 500; }
+  .rt-list { position: relative; list-style: none; margin: 0; padding: 0; }
+  .rt-list svg.rt-svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+  .rt-list li { margin: 0; }
+  .rt-btn {
+    display: block; width: 100%; padding: 6px 8px 6px 19px; border: 0; background: none;
+    font: inherit; line-height: 20px; text-align: left; cursor: pointer; border-radius: 6px;
+    color: color-mix(in srgb, var(--text) 50%, transparent);
+    transition: color 0.2s ease;
+  }
+  .rt-btn:hover { color: color-mix(in srgb, var(--text) 80%, transparent); }
+  .rt-btn:focus-visible { outline: 2px solid color-mix(in srgb, var(--text) 30%, transparent); }
+  .rt-btn[data-current] { color: var(--text-strong); font-weight: 500; }
+  .rt-btn.rt-d1 { padding-left: 33px; }
+  .rt-dot { transition: fill 0.2s ease, stroke 0.2s ease; }
+  .rt-plane { color: var(--text-strong); filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.3)); }
+</style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function () {
+    var nav = document.querySelector('[data-rail-toc]');
+    var prose = document.querySelector('[data-prose]');
+    if (!nav || !prose) return;
+    var heads = Array.prototype.slice.call(prose.querySelectorAll('h2[id], h3[id]'));
+    var h2count = heads.filter(function (h) { return h.tagName === 'H2'; }).length;
+    if (h2count < 3) return;
+
+    var NS = 'http://www.w3.org/2000/svg';
+    var RAIL_X = 5, INDENT = 14, OFFSET = 96, HOLE = 4;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var list = nav.querySelector('[data-rt-list]');
+    var rows = heads.map(function (h, i) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rt-btn' + (h.tagName === 'H3' ? ' rt-d1' : '');
+      b.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+      b.addEventListener('click', function () { select(i); });
+      li.appendChild(b);
+      list.appendChild(li);
+      return { li: li, btn: b, el: h, depth: h.tagName === 'H3' ? 1 : 0 };
+    });
+    nav.hidden = false;
+
+    var svg, path, fill, plane, holeA, holeB, dots = [];
+    var nodes = [], lens = [], total = 0;
+    var cur = 0, goal = 0, facing = 1, turnFrom = 0, heading = 180, headGoal = 180;
+    var pinned = null, userScrolled = false, placed = false, raf = 0;
+
+    function el(name, attrs, parent) {
+      var n = document.createElementNS(NS, name);
+      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      if (parent) parent.appendChild(n);
+      return n;
+    }
+
+    // A gentle snake: each stretch between two headings bows out to one side,
+    // then the next bows the other way, so the line is curvy and not straight.
+    function buildPath(pts) {
+      var d = 'M' + pts[0].x + ' 0 L' + pts[0].x + ' ' + pts[0].y;
+      for (var i = 1; i < pts.length; i++) {
+        var f = pts[i - 1], t = pts[i];
+        var dy = t.y - f.y;
+        var amp = (i % 2 ? 1 : -1) * Math.min(16, Math.max(12, dy * 0.4));
+        d += ' C' + (f.x + amp) + ' ' + (f.y + dy * 0.3) + ' ' + (t.x + amp) + ' ' + (t.y - dy * 0.3) + ' ' + t.x + ' ' + t.y;
+      }
+      return d;
+    }
+
+    function lengthAtY(y) {
+      var lo = 0, hi = total;
+      for (var i = 0; i < 24; i++) {
+        var mid = (lo + hi) / 2;
+        if (path.getPointAtLength(mid).y < y) lo = mid; else hi = mid;
+      }
+      return hi;
+    }
+
+    function measure() {
+      nodes = rows.map(function (r) {
+        return { x: RAIL_X + r.depth * INDENT, y: r.li.offsetTop + r.li.offsetHeight / 2 };
+      });
+      var w = Math.max.apply(null, nodes.map(function (n) { return n.x; })) + RAIL_X + 4;
+      var h = list.offsetHeight;
+      if (svg) svg.remove();
+      if (plane) plane.remove();
+      svg = el('svg', { class: 'rt-svg', width: w, height: h, 'aria-hidden': 'true' });
+      var id = 'rt' + Math.floor(Math.random() * 1e6);
+      var d = buildPath(nodes);
+
+      var grad = el('linearGradient', { id: id + 'f', gradientUnits: 'userSpaceOnUse', x1: 0, y1: 0, x2: 0, y2: Math.max(1, nodes[0].y - 4) }, svg);
+      el('stop', { offset: 0, 'stop-color': 'black' }, grad);
+      el('stop', { offset: 1, 'stop-color': 'white' }, grad);
+      var box = { maskUnits: 'userSpaceOnUse', x: -8, y: -8, width: w + 16, height: h + 16 };
+      var m1 = el('mask', Object.assign({ id: id }, box), svg);
+      el('rect', { x: -8, y: -8, width: w + 16, height: h + 16, fill: 'url(#' + id + 'f)' }, m1);
+      nodes.forEach(function (n) { el('circle', { cx: n.x, cy: n.y, r: 4, fill: 'black' }, m1); });
+      holeA = el('circle', { r: HOLE, fill: 'black' }, m1);
+      var m2 = el('mask', Object.assign({ id: id + 'n' }, box), svg);
+      el('rect', { x: -8, y: -8, width: w + 16, height: h + 16, fill: 'white' }, m2);
+      holeB = el('circle', { r: HOLE, fill: 'black' }, m2);
+
+      var g1 = el('g', { mask: 'url(#' + id + ')' }, svg);
+      path = el('path', { d: d, fill: 'none', 'stroke-width': 1.25, 'stroke-dasharray': '2 5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', stroke: 'currentColor', opacity: 0.25 }, g1);
+      fill = el('path', { d: d, fill: 'none', 'stroke-width': 1.25, stroke: 'var(--rail)', 'stroke-linejoin': 'round' }, g1);
+      var g2 = el('g', { mask: 'url(#' + id + 'n)' }, svg);
+      dots = nodes.map(function (n) {
+        return el('circle', { class: 'rt-dot', cx: n.x, cy: n.y, r: 3.25, 'stroke-width': 1.25, fill: 'transparent', stroke: 'color-mix(in srgb, currentColor 30%, transparent)' }, g2);
+      });
+      list.insertBefore(svg, list.firstChild);
+
+      plane = el('svg', { class: 'rt-plane', viewBox: '0 0 24 24', width: 16, height: 16, 'aria-hidden': 'true' });
+      plane.style.cssText = 'position:absolute;left:-8px;top:-8px;overflow:visible;pointer-events:none;will-change:transform';
+      el('path', { d: 'M12 2 20.5 21 12 17.5 3.5 21z', fill: 'currentColor', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, plane);
+      list.appendChild(plane);
+
+      total = path.getTotalLength();
+      lens = nodes.map(function (n) { return lengthAtY(n.y); });
+      sync(true);
+      pose(cur);
+    }
+
+    function pose(l) {
+      if (!total) return;
+      var at = path.getPointAtLength(l);
+      var b = path.getPointAtLength(Math.max(0, l - 1));
+      var a = path.getPointAtLength(Math.min(total, l + 1));
+      [holeA, holeB].forEach(function (c) { c.setAttribute('cx', at.x); c.setAttribute('cy', at.y); });
+      var ang = Math.atan2(a.y - b.y, a.x - b.x) * 180 / Math.PI + 90 + (facing < 0 ? 180 : 0);
+      headGoal = ang + 360 * Math.round((headGoal - ang) / 360);
+      if (reduce) heading = headGoal;
+      plane.style.transform = 'translate(' + at.x + 'px,' + at.y + 'px) rotate(' + heading + 'deg)';
+      fill.setAttribute('stroke-dasharray', l + ' ' + (total + 5));
+      var reached = lens.filter(function (n) { return n <= l + 0.5; }).length;
+      dots.forEach(function (c, i) {
+        var covered = i < reached;
+        c.setAttribute('r', covered ? 3 : 3.25);
+        c.setAttribute('fill', covered ? 'var(--rail)' : 'transparent');
+        c.setAttribute('stroke', covered ? 'var(--rail)' : 'color-mix(in srgb, currentColor 30%, transparent)');
+      });
+      var active = Math.max(0, reached - 1);
+      rows.forEach(function (r, i) {
+        if (i === active) r.btn.setAttribute('data-current', ''); else r.btn.removeAttribute('data-current');
+      });
+    }
+
+    function tick() {
+      raf = 0;
+      var dl = goal - cur;
+      var dh = headGoal - heading;
+      cur = Math.abs(dl) < 0.1 ? goal : cur + dl * 0.14;
+      heading = Math.abs(dh) < 0.3 ? headGoal : heading + dh * 0.2;
+      pose(cur);
+      if (cur !== goal || heading !== headGoal) raf = requestAnimationFrame(tick);
+    }
+
+    function aim(next) {
+      var delta = (next - turnFrom) * facing;
+      if (delta > 0) turnFrom = next;
+      else if (Math.abs(next - turnFrom) > 2) { facing = facing > 0 ? -1 : 1; turnFrom = next; }
+      goal = next;
+      if (reduce) { cur = goal; pose(cur); }
+      else if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    function sync(first) {
+      if (!lens.length) return;
+      if (pinned !== null) { aim(lens[pinned]); return; }
+      var st = window.scrollY, vh = window.innerHeight, sh = document.documentElement.scrollHeight;
+      var remaining = Math.max(0, sh - vh - st);
+      var line = Math.min(OFFSET, st);
+      var anchor = line + Math.max(0, vh - line - remaining);
+      var tops = rows.map(function (r) { return r.el.getBoundingClientRect().top; });
+      var idx = -1;
+      for (var i = tops.length - 1; i >= 0; i--) { if (tops[i] <= anchor) { idx = i; break; } }
+      var next;
+      if (idx === -1) next = lens[0];
+      else if (idx === lens.length - 1) next = lens[idx];
+      else {
+        var span = tops[idx + 1] - tops[idx];
+        var p = span > 0 ? (anchor - tops[idx]) / span : 0;
+        next = lens[idx] + Math.min(1, Math.max(0, p)) * (lens[idx + 1] - lens[idx]);
+      }
+      if (first === true && !placed) { placed = true; cur = goal = next; turnFrom = next; pose(cur); heading = headGoal; nav.setAttribute('data-ready', ''); return; }
+      aim(next);
+    }
+
+    function select(i) {
+      pinned = i; userScrolled = false; sync();
+      var top = rows[i].el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: top - OFFSET, behavior: reduce ? 'auto' : 'smooth' });
+    }
+
+    function onIntent() { userScrolled = true; }
+    window.addEventListener('scroll', function () {
+      if (pinned !== null && userScrolled) pinned = null;
+      sync();
+    }, { passive: true });
+    window.addEventListener('wheel', onIntent, { passive: true });
+    window.addEventListener('touchstart', onIntent, { passive: true });
+    window.addEventListener('pointerdown', onIntent);
+    window.addEventListener('keydown', onIntent);
+    window.addEventListener('resize', function () { if (nav.offsetParent !== null) measure(); });
+
+    if (nav.offsetParent !== null || getComputedStyle(nav).display !== 'none') measure();
+    if (window.ResizeObserver) new ResizeObserver(function () { if (nav.offsetParent !== null) measure(); }).observe(list);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (nav.offsetParent !== null) measure(); });
+  });
+</script>
