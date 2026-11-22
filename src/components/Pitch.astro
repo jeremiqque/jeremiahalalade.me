@@ -1,0 +1,78 @@
+---
+// "Work with me": a closing pitch under the tabs. The lines fade up one by
+// one as it scrolls into view (they just show, no motion, for people who
+// prefer reduced motion or have scripts off).
+interface Props { email: string; upwork?: string }
+const { email, upwork } = Astro.props;
+---
+
+<section class="pitch" id="work-with-me" aria-labelledby="pitch-h">
+  <p class="pitch-label" id="pitch-h">Work with me</p>
+
+  <div class="pitch-body" data-pitch>
+    <p class="pl">You've invested time, money and resources into building something people actually want.</p>
+    <p class="pl">You've put money into marketing to get their attention, built a brand they can trust, and made a product worth paying for.</p>
+    <p class="pl pl-big">But what happens when they finally click?</p>
+    <p class="pl pl-strong">That's where I come in.</p>
+    <p class="pl">I'm a Design Engineer. I design and build websites and mobile applications that turn customer attention into action.</p>
+    <p class="pl">I make sure your customers can understand your offer, find their way around your product, book appointments, sign up and complete purchases without unnecessary friction.</p>
+    <p class="pl">Because getting people to your website is one thing. Making sure the experience doesn't lose them is where I come in.</p>
+  </div>
+
+  <div class="pitch-cta pl" data-pitch-cta>
+    <a class="pitch-btn" href={`mailto:${email}?subject=${encodeURIComponent('A project for you')}`}>
+      Start a project
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M8 7h9v9" /></svg>
+    </a>
+    {upwork && <a class="pitch-alt" href={upwork} target="_blank" rel="noopener noreferrer">or hire me on Upwork</a>}
+  </div>
+</section>
+
+<style>
+  .pitch { margin-top: clamp(36px, 5vw, 56px); padding-top: clamp(28px, 4vw, 40px); border-top: 1px dashed var(--tab-border, rgba(255, 255, 255, 0.18)); scroll-margin-top: 24px; }
+  .pitch-label { margin: 0 0 18px; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .pitch-body { display: grid; gap: 14px; max-width: 34rem; }
+  .pl { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: color-mix(in srgb, var(--text) 82%, transparent); }
+  .pl-big { margin-top: 10px; font-size: clamp(1.25rem, 3.4vw, 1.6rem); line-height: 1.25; letter-spacing: -0.01em; color: var(--text-strong); }
+  .pl-strong { font-size: 1rem; font-weight: 500; color: var(--text-strong); }
+  .pitch-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 26px; }
+  .pitch-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px;
+    font-size: 0.9375rem; font-weight: 500; text-decoration: none;
+    color: var(--tab-on-text, #fff); background: var(--tab-on-bg, #cb4834);
+    transition: filter 0.2s ease, scale 0.12s ease;
+  }
+  .pitch-btn:hover { filter: brightness(1.1); }
+  .pitch-btn:active { scale: 0.97; }
+  .pitch-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .pitch-btn svg { transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
+  .pitch-btn:hover svg { transform: translate(2px, -2px); }
+  .pitch-alt { font-size: 0.875rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, var(--text) 25%, transparent); }
+  .pitch-alt:hover { color: var(--text-strong); }
+
+  /* Fade-up only when the script has marked the section as ready. */
+  .pitch.js .pl { opacity: 0; transform: translateY(10px); transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: var(--d, 0ms); }
+  .pitch.js.in .pl { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .pitch.js .pl { opacity: 1; transform: none; transition: none; } }
+</style>
+
+<script is:inline>
+  (function () {
+    var s = document.getElementById('work-with-me');
+    if (!s || !('IntersectionObserver' in window)) return;
+    s.classList.add('js');
+    Array.prototype.forEach.call(s.querySelectorAll('.pl'), function (p, i) { p.style.setProperty('--d', (i * 90) + 'ms'); });
+    new IntersectionObserver(function (es, io) {
+      if (es[0].isIntersecting) { s.classList.add('in'); io.disconnect(); }
+    }, { threshold: 0.15 }).observe(s);
+
+    // Links like "Work with me" in the bio glide down to the section.
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href="#work-with-me"]');
+      if (!a) return;
+      e.preventDefault();
+      s.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', '#work-with-me');
+    });
+  })();
+</script>

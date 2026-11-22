@@ -3,6 +3,7 @@
 // Built from the Figma "Lumis / My iste" frame (1518×551). Responsive, desktop-first.
 import Crowd from '../components/Crowd.astro';
 import ScrollBlur from '../components/ScrollBlur.astro';
+import Pitch from '../components/Pitch.astro';
 import MusicWidget from '../components/MusicWidget.astro';
 import Tabs from '../components/Tabs.astro';
 import SoundToggle from '../components/SoundToggle.astro';
@@ -59,7 +60,7 @@ const year = new Date().getFullYear();
           </div>
           <p class="role">Design Engineer</p>
           <div class="bio">
-            <p>I'm a design engineer based in Nigeria.</p>
+            <p>I'm a design engineer based in Nigeria. If you need a website or an app, <a class="bio-link" href="#work-with-me">work with me</a>.</p>
             <p>I currently work with <span class="peek"><img class="ico" src="/assets/logos/campusupdate.png" alt="" width="16" height="16" /><a class="bio-link" href="https://campusupdate.divacatech.com/" target="_blank" rel="noopener noreferrer">CampusUpdate</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img data-src="/assets/previews/campusupdate.jpg" alt="" width="256" height="160" decoding="async" /></span></span> as a co-founding design engineer, where I spend most of my time on the details most people never notice but always feel. I highlight curiosity as a personal quality.</p>
             <p>Before CampusUpdate, I worked with <span class="peek"><img class="ico" src="/assets/logos/axiomblack.png" alt="" width="16" height="16" /><a class="bio-link" href="https://axiomblack.com/" target="_blank" rel="noopener noreferrer">axiomblack.com</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img data-src="/assets/previews/axiomblack.jpg" alt="" width="256" height="160" decoding="async" /></span></span>, <span class="peek"><img class="ico" src="/assets/logos/hydratech.png" alt="" width="16" height="16" /><a class="bio-link" href="https://hydratechinnovations.ng/" target="_blank" rel="noopener noreferrer">hydratechinnovations.ng</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img data-src="/assets/previews/hydratech.jpg" alt="" width="256" height="160" decoding="async" /></span></span> and <span class="peek"><img class="ico" src="/assets/logos/springcitadel.png" alt="" width="16" height="16" /><a class="bio-link" href="https://www.springcitadelschool.com/" target="_blank" rel="noopener noreferrer">springcitadelintschool.com</a><span class="peek-card" aria-hidden="true"><span class="peek-bar"><i></i><i></i><i></i><b></b></span><img data-src="/assets/previews/springcitadel.jpg" alt="" width="256" height="160" decoding="async" /></span></span>.</p>
             <p>Along the way, I freelanced on <a class="bio-link" href="https://www.upwork.com/freelancers/~015e96558bbb1bacc9" target="_blank" rel="noopener noreferrer">Upwork</a> and Fiverr.</p>
@@ -80,6 +81,8 @@ const year = new Date().getFullYear();
       </div>
 
       <Tabs />
+
+      <Pitch email={email} upwork="https://www.upwork.com/freelancers/~015e96558bbb1bacc9" />
 
 
       <p class="footer">© {year} Jeremiah Alalade</p>
