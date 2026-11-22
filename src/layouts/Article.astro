@@ -13,8 +13,16 @@ interface Props {
   date?: string;
   /** Optional link to the live thing, shown as an icon next to the title. */
   live?: string;
+  /** Short labels shown under the title, like a project's type. */
+  tags?: string[];
+  /** Tools used, shown as a list at the end of a project page. */
+  tools?: string[];
+  /** Big picture at the top of a project page. */
+  hero?: string;
+  heroAlt?: string;
+  heroUrl?: string;
 }
-const { title, description, date, live } = Astro.props;
+const { title, description, date, live, tags, tools, hero, heroAlt, heroUrl } = Astro.props;
 const when = date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : '';
 const year = new Date().getFullYear();
 ---
@@ -77,6 +85,7 @@ const year = new Date().getFullYear();
           <div>
             <h1 class="title">{title}</h1>
             {date && <p class="meta"><time datetime={date}>{when}</time></p>}
+            {tags && tags.length > 0 && <ul class="tags">{tags.map((t) => <li>{t}</li>)}</ul>}
           </div>
           <div class="actions">
             <button class="act" type="button" data-copy="page" aria-label="Copy page text" title="Copy page text">
@@ -94,9 +103,23 @@ const year = new Date().getFullYear();
             )}
           </div>
         </header>
+        {hero && (
+          <figure class="fig hero-fig" data-fig>
+            <div class="shot-frame">
+              <div class="shot-bar"><i></i><i></i><i></i><span>{heroUrl ?? 'Screenshot'}</span></div>
+              <img src={hero} alt={heroAlt ?? title} width="1000" height="620" decoding="async" fetchpriority="high" />
+            </div>
+          </figure>
+        )}
         <div class="prose" data-prose>
           <slot />
         </div>
+        {tools && tools.length > 0 && (
+          <section class="tools" aria-labelledby="tools-h">
+            <h2 id="tools-h">Tools used</h2>
+            <ul>{tools.map((t) => <li>{t}</li>)}</ul>
+          </section>
+        )}
       </article>
 
       <Support />
@@ -505,4 +528,23 @@ const year = new Date().getFullYear();
   }
   .back:hover .back-arrow { transform: translateX(-3px); background: color-mix(in srgb, var(--text) 16%, transparent); }
   @media (prefers-reduced-motion: reduce) { .back, .back-arrow { transition: none; } }
+  .hero-fig { margin: 28px 0 40px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 14px 0 0; padding: 0; }
+  .tags li, .tools li {
+    padding: 4px 10px; border-radius: 999px; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  }
+  .tools { margin-top: 40px; }
+  .tools h2 { margin: 0 0 12px; font-size: 1.0625rem; font-weight: 500; color: var(--text-strong); }
+  .tools ul { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+  .tools li { font-size: 0.75rem; letter-spacing: 0.02em; text-transform: none; color: var(--text); }
+  .visit-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; box-sizing: border-box;
+    margin: 8px 0 4px; padding: 15px 20px; border-radius: 12px;
+    font-size: 0.9375rem; font-weight: 500; text-decoration: none !important;
+    color: var(--tab-on-text, #fff) !important; background: var(--tab-on-bg, #cb4834);
+    transition: filter 0.2s ease, scale 0.12s ease;
+  }
+  .visit-btn:hover { filter: brightness(1.1); }
+  .visit-btn:active { scale: 0.96; }
 </style>
