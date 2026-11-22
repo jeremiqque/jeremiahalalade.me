@@ -58,7 +58,7 @@ type PostItem = {
 };
 
 type Tab =
-  | { id: string; label: string; kind: 'list'; items: { title: string; description: string; href: string }[] }
+  | { id: string; label: string; kind: 'lab'; items: { title: string; href: string; img: string }[] }
   | { id: string; label: string; kind: 'writing'; items: PostItem[] }
   | { id: string; label: string; kind: 'cards'; inProgress?: boolean; items: CardItem[] }
   | { id: string; label: string; kind: 'rings'; items: RingItem[] }
@@ -104,15 +104,22 @@ const tabs: Tab[] = [
     id: 'projects',
     label: 'Projects',
     kind: 'cards',
-    inProgress: true,
     items: [
       {
-        title: 'DocuCheck Africa',
-        blurb: 'Checks construction permits against local rules and gives a pass, warning or fail.',
-        details: '/work/docucheck-africa',
-        category: 'Product design / AI',
-        thumb: '/assets/work/docucheck.jpg',
-        live: 'https://docucheckafrica.jeremiahalalade.me/',
+        title: 'Campus Update',
+        blurb: 'Verified campus news, urgent alerts and the academic calendar in one app.',
+        details: '/work/campus-update',
+        category: 'Product design / Landing page',
+        thumb: '/assets/work/campus-hero.jpg',
+        live: 'https://campusupdate.divacatech.com/',
+      },
+      {
+        title: 'Will & Ash',
+        blurb: 'A website for a commercial law firm in Lagos and Abuja.',
+        details: '/work/will-and-ash',
+        category: 'Web design / Development',
+        thumb: '/assets/work/willash-hero.jpg',
+        live: 'https://www.will-ash.com/',
       },
       {
         title: 'Pixels',
@@ -135,17 +142,17 @@ const tabs: Tab[] = [
   {
     id: 'lab',
     label: 'Lab',
-    kind: 'list',
+    kind: 'lab',
     items: [
-      { title: 'Koffi', description: 'Coffee brand landing page built around space, not beans.', href: '/work/koffi' },
-      { title: 'Picshare', description: 'A cork board for photos you can drag and pin.', href: '/work/picshare' },
-      { title: 'Weme', description: 'Landing page for an idea-capture app.', href: '/work/weme' },
-      { title: 'Pricing', description: 'A three-tier pricing page you can read once.', href: '/work/pricing' },
-      { title: 'Hero', description: 'One hero section with nowhere to hide.', href: '/work/hero' },
-      { title: 'Apex', description: 'A footer built to feel like an ending.', href: '/work/apex' },
-      { title: 'Navara Energy Services', description: 'Homepage for an energy and marine company.', href: '/work/navara-energy-services' },
-      { title: 'DocuCheck Africa — Sign in', description: 'Login screen on a construction-site backdrop.', href: '/work/docucheck-africa-sign-in' },
-      { title: 'Spring Citadel — 404 page', description: 'A not-found page with a clear way home.', href: '/work/spring-citadel-404-page' },
+      { title: 'Koffi', href: '/work/koffi', img: '/assets/work/koffi.jpg' },
+      { title: 'Picshare', href: '/work/picshare', img: '/assets/work/picshare.jpg' },
+      { title: 'Weme', href: '/work/weme', img: '/assets/work/weme.jpg' },
+      { title: 'Pricing', href: '/work/pricing', img: '/assets/work/pricing.jpg' },
+      { title: 'Hero', href: '/work/hero', img: '/assets/work/hero.jpg' },
+      { title: 'Apex', href: '/work/apex', img: '/assets/work/apex.jpg' },
+      { title: 'Navara Energy Services', href: '/work/navara-energy-services', img: '/assets/work/navara-energy.jpg' },
+      { title: 'DocuCheck Africa — Sign in', href: '/work/docucheck-africa-sign-in', img: '/assets/work/docucheck-login.jpg' },
+      { title: 'Spring Citadel — 404 page', href: '/work/spring-citadel-404-page', img: '/assets/work/spring-citadel-404.jpg' },
     ],
   },
   {
@@ -367,13 +374,18 @@ const fmtDate = (iso: string) => {
           </p>
         )}
 
-        {tab.kind === 'list' && (
-          <ul class="posts">
+        {tab.kind === 'lab' && (
+          <ul class="lab-grid">
             {tab.items.map((item) => (
-              <li>
-                <a class="post" href={item.href}>
-                  <span class="post-title">{item.title}</span>
-                  <span class="post-desc">{item.description}</span>
+              <li class="lab-card">
+                <a class="lab-link" href={item.href}>
+                  <div class="lab-stage lab-shot">
+                    <img src={item.img} alt={`Preview of ${item.title}`} loading="lazy" decoding="async" />
+                  </div>
+                  <div class="lab-foot">
+                    <span class="lab-title">{item.title}</span>
+                    <svg class="lab-arrow" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l7-7M5.5 4.5h6v6" /></svg>
+                  </div>
                 </a>
               </li>
             ))}
@@ -421,20 +433,13 @@ const fmtDate = (iso: string) => {
                 <div class="card-body">
                   <div class="card-head">
                     <h2 class="card-title">{item.details ? <a class="card-title-link" href={item.details}>{item.title}</a> : item.title}</h2>
-                    {item.live && (
-                      <a
-                        class="card-out"
-                        href={item.live}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Open ${item.title} in a new tab`}
-                      >
+                    {item.details && (
+                      <span class="card-out" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                          <path d="M14 4h6v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M20 4 11 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-                          <path d="M17 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M7 17 17 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                          <path d="M8 7h9v9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                      </a>
+                      </span>
                     )}
                   </div>
 
@@ -992,6 +997,7 @@ const fmtDate = (iso: string) => {
     if (fromHash === 'guestbook') loadGuests();
   })();
 </script>
+
 
 <style>
   .tabs {
@@ -2136,4 +2142,49 @@ const fmtDate = (iso: string) => {
     .guest .postmark { display: none; }
     .guest { padding-top: 34px; }
   }
+
+  /* ----- Lab: a grid of cards, each with a small preview and a title ----- */
+  .lab-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+  }
+  @media (max-width: 480px) { .lab-grid { grid-template-columns: minmax(0, 1fr); } }
+  .lab-card {
+    position: relative; display: flex; flex-direction: column;
+    padding: 6px; border-radius: 18px;
+    background: var(--bg-card);
+    border: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    transition: border-color 0.2s ease, scale 0.15s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  .lab-card:hover { border-color: color-mix(in srgb, var(--text) 26%, transparent); }
+  .lab-link { display: flex; flex-direction: column; color: inherit; text-decoration: none; border-radius: 14px; }
+  .lab-link:active { scale: 0.99; }
+  .lab-link:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .lab-stage {
+    position: relative; height: 188px; overflow: hidden; border-radius: 13px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--text) 6%, var(--bg-page));
+    border: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+    user-select: none; -webkit-user-select: none;
+  }
+  .lab-shot { display: block; background: var(--bg-page); }
+  .lab-shot img {
+    display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .lab-link:hover .lab-shot img { transform: scale(1.04); }
+  .lab-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 10px 7px; }
+  .lab-title { font-size: 0.9rem; font-weight: 600; color: var(--text-strong); line-height: 1.25; }
+  .lab-arrow { flex: none; color: var(--accent-mark, #cb4834); transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
+  .lab-link:hover .lab-arrow { transform: translate(2px, -2px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lab-shot img { transition: none !important; }
+  }
+
+  /* The whole project card opens its page, not just the title. */
+  .cards .card { position: relative; cursor: pointer; }
+  .cards .card-title-link::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+  .cards .card:hover .card-out { color: var(--text-strong); transform: translate(2px, -2px); }
+  .cards .card-out { transition: color 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1); }
 </style>
