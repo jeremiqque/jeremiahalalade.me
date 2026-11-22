@@ -12,9 +12,9 @@ export function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = post;
-const { title, description, date, live } = post.frontmatter;
+const { title, description, date, live, tags, tools, hero, heroAlt, heroUrl } = post.frontmatter;
 ---
 
-<Article title={title} description={description} date={date ? String(date) : undefined} live={live}>
+<Article title={title} description={description} date={date ? String(date) : undefined} live={live} tags={tags} tools={tools} hero={hero} heroAlt={heroAlt} heroUrl={heroUrl}>
   <Content />
 </Article>
